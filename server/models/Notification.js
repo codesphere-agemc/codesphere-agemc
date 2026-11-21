@@ -26,6 +26,7 @@ const notificationSchema = new mongoose.Schema(
         'host-review',
         'project',
         'recruitment',
+        'result',
         'system',
       ],
     },
