@@ -19,6 +19,7 @@ import AdminBadgeAwards from '../components/AdminBadgeAwards';
 import AdminStaffRoles from '../components/AdminStaffRoles';
 import MemberProfile from './MemberProfile';
 import BroadcastOptions from '../components/BroadcastOptions';
+import PushEmailButton from '../components/PushEmailButton';
 import ProfileAvatar from '../components/ProfileAvatar';
 
 const initialForm = {
@@ -1638,6 +1639,10 @@ export default function Admin() {
                                   : 'Publish'}
                               </button>
 
+                              {event.status === 'published' && (
+                                <PushEmailButton kind="event" id={event._id} title={event.title} label="Email" />
+                              )}
+
                               <button
                                 type="button"
                                 className="admin-delete-button"
@@ -2302,7 +2307,9 @@ export default function Admin() {
 
                             <div className="admin-member-info">
                               <div className="admin-member-avatar">
-                                <ProfileAvatar user={member} name={member.name} fallback={getInitial(member.name)} loading="lazy" />
+                                {member.avatar
+                                  ? <img src={member.avatar} alt="" loading="lazy" />
+                                  : getInitial(member.name)}
                               </div>
 
                               <div className="admin-member-details">
