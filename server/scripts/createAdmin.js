@@ -20,8 +20,8 @@ async function main() {
     const name = (await rl.question('Admin name: ')).trim();
     const password = await rl.question('Admin password (hidden input is not enabled): ');
 
-    if (!name || !email.includes('@') || password.length < 8 || password.length > 12) {
-      throw new Error('Enter a name, valid email, and password of 8–12 characters.');
+    if (!name || !email.includes('@') || password.length < 8) {
+      throw new Error('Enter a name, valid email, and password of minimum 8 characters.');
     }
 
     await mongoose.connect(process.env.MONGODB_URI);
@@ -49,7 +49,7 @@ async function main() {
     console.log('Admin account created successfully.');
   } finally {
     rl.close();
-    await mongoose.disconnect().catch(() => {});
+    await mongoose.disconnect().catch(() => { });
   }
 }
 
