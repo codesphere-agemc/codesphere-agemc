@@ -33,6 +33,8 @@ const navItems = [
     children: [
       { label: 'Discussion Forum', path: '/forum', icon: 'bi-chat-dots', description: 'Ask, share and discuss anything' },
       { label: 'Leaderboard', path: '/leaderboard', icon: 'bi-trophy', description: 'XP, streaks and badges' },
+      { label: 'Results', path: '/results', icon: 'bi-clipboard-data', description: 'Hackathon, interview and contest scorecards' },
+      { label: 'Recruitment & Interviews', path: '/recruitments', icon: 'bi-person-badge', description: 'Join a club or team: apply in one click' },
       { label: 'Team', path: '/team', icon: 'bi-people', description: 'The people behind CodeSphere' },
     ],
   },
@@ -141,6 +143,7 @@ const Navbar = () => {
     { role: 'challenge-editor', path: '/admin/materials', icon: 'bi-journal-bookmark', label: 'Study Guide editor' },
     { role: 'hackathon-organizer', path: '/admin/hackathons', icon: 'bi-trophy', label: 'Hackathon organizer' },
     { role: 'project-reviewer', path: '/admin/projects', icon: 'bi-kanban', label: 'Review projects' },
+    { role: 'hackathon-organizer', path: '/admin/results', icon: 'bi-clipboard-data', label: 'Publish results' },
     { role: 'hackathon-organizer', path: '/admin/review', icon: 'bi-inbox', label: 'Review hosted hackathons' },
   ].filter((link) => user?.staffRoles?.includes(link.role));
 
