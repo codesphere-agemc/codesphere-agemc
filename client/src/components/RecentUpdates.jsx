@@ -86,19 +86,19 @@ export default function RecentUpdates() {
             <h2 id="ru-title">Recent updates from the community</h2>
           </div>
         </div>
-      </div>
 
-      {/* A smooth, endless marquee: the cards are shown twice and slide left by
-          exactly one set, so the loop has no visible jump. Hover, focus or a
-          tap pauses it. */}
-      <div
-        className={`ru-marquee ${paused ? 'is-paused' : ''}`}
-        onTouchStart={() => setPaused(true)}
-        onTouchEnd={() => window.setTimeout(() => setPaused(false), 3000)}
-      >
-        <div className="ru-marquee-track" style={{ '--ru-duration': `${items.length * SECONDS_PER_CARD}s` }}>
-          {items.map((item) => <Card key={item.link} item={item} />)}
-          {items.map((item) => <Card key={`copy-${item.link}`} item={item} copy />)}
+        {/* A smooth, endless marquee inside the page's content width: the cards
+            are shown twice and slide left by exactly one set, so the loop has
+            no visible jump. Hover, focus or a tap pauses it. */}
+        <div
+          className={`ru-marquee ${paused ? 'is-paused' : ''}`}
+          onTouchStart={() => setPaused(true)}
+          onTouchEnd={() => window.setTimeout(() => setPaused(false), 3000)}
+        >
+          <div className="ru-marquee-track" style={{ '--ru-duration': `${items.length * SECONDS_PER_CARD}s` }}>
+            {items.map((item) => <Card key={item.link} item={item} />)}
+            {items.map((item) => <Card key={`copy-${item.link}`} item={item} copy />)}
+          </div>
         </div>
       </div>
     </section>
