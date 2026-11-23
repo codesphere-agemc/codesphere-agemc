@@ -2,6 +2,8 @@ import { Link } from 'react-router-dom';
 import CodeTypingWindow from './CodeTypingWindow';
 import '../css/Hero.css';
 
+const WHATSAPP_COMMUNITY = 'https://chat.whatsapp.com/FDGLH2yMpFuDJJBx448afz';
+
 const socialLinks = [
   {
     name: 'LinkedIn',
@@ -68,6 +70,15 @@ const Hero = () => {
               <i className="bi bi-arrow-up-right" aria-hidden="true" />
             </Link>
           </div>
+
+          <a className="hero-whatsapp" href={WHATSAPP_COMMUNITY} target="_blank" rel="noopener noreferrer">
+            <span className="hero-whatsapp-icon"><i className="bi bi-whatsapp" aria-hidden="true" /></span>
+            <span className="hero-whatsapp-text">
+              <strong>Join our WhatsApp community</strong>
+              <small>Updates, events and help, straight to your phone</small>
+            </span>
+            <i className="bi bi-arrow-up-right" aria-hidden="true" />
+          </a>
 
           <div className="hero-socials" aria-label="Follow CodeSphere">
             <span className="hero-socials-label">FOLLOW US</span>

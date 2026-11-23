@@ -17,6 +17,7 @@ import BadgeCelebration from './components/BadgeCelebration';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import ExplorePlatform from './components/ExplorePlatform';
+import RecentUpdates from './components/RecentUpdates';
 import Events from './components/Events';
 import TeamCarousel from './components/TeamCarousel';
 import CTA from './components/CTA';
@@ -74,6 +75,7 @@ function HomePage() {
 
       <main>
         <Hero />
+        <RecentUpdates />
         <ExplorePlatform />
         <Events />
         <About />

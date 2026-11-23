@@ -481,3 +481,19 @@
     animation: none;
   }
 }
+
+/* WhatsApp community button */
+.hero-whatsapp {
+  display: inline-flex; align-items: center; gap: 12px; max-width: 100%; margin-top: 22px; padding: 10px 16px 10px 10px;
+  border: 1px solid rgba(37, 211, 102, .35); border-radius: 16px; background: rgba(255, 255, 255, .85);
+  color: var(--navy, #10243a); text-decoration: none; box-shadow: 0 8px 22px rgba(18, 140, 126, .14);
+  backdrop-filter: blur(6px); transition: transform .2s, box-shadow .2s, border-color .2s;
+}
+.hero-whatsapp:hover { color: var(--navy, #10243a); border-color: #25d366; transform: translateY(-2px); box-shadow: 0 14px 30px rgba(18, 140, 126, .22); }
+.hero-whatsapp-icon { display: grid; flex: none; width: 42px; height: 42px; place-items: center; border-radius: 12px; background: #25d366; color: #fff; font-size: 1.35rem; }
+.hero-whatsapp-text { display: flex; flex-direction: column; min-width: 0; line-height: 1.25; }
+.hero-whatsapp-text strong { font-size: .95rem; font-weight: 800; }
+.hero-whatsapp-text small { color: var(--text-muted, #536579); font-size: .78rem; }
+.hero-whatsapp > .bi-arrow-up-right { color: #128c7e; }
+.hero-whatsapp + .hero-socials { margin-top: 18px; }
+@media (prefers-reduced-motion: reduce) { .hero-whatsapp { transition: none; } }
