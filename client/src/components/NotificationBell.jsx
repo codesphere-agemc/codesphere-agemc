@@ -23,6 +23,7 @@ const TYPE_ICONS = {
   hackathon: 'bi-trophy',
   'host-review': 'bi-megaphone',
   project: 'bi-rocket-takeoff',
+  result: 'bi-clipboard-data',
   system: 'bi-info-circle',
 };
 

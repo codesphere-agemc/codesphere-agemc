@@ -10,6 +10,7 @@ import CodingStats from '../components/CodingStats';
 import DashboardProfileSidebar from '../components/DashboardProfileSidebar';
 import ProfileBadges from '../components/ProfileBadges';
 import DashboardDiscover from '../components/DashboardDiscover';
+import MyResults from '../components/MyResults';
 import ProfileAvatar from '../components/ProfileAvatar';
 import Profile from './Profile';
 import { calculateProfileCompletion } from '../lib/profileCompletion';
@@ -20,6 +21,7 @@ const baseNavigation = [
   { label: 'Milestones', path: '/user/milestone', icon: 'bi-award' },
   { label: 'My Profile', path: '/user/profile', icon: 'bi-person-lines-fill' },
   { label: 'My Events', path: '/user/activities', icon: 'bi-calendar-event' },
+  { label: 'My Results', path: '/user/results', icon: 'bi-clipboard-data' },
 ];
 
 function getNavigation(user) {
@@ -569,6 +571,8 @@ export default function UserDashboard() {
               <ProfileSection view="profile" />
             ) : pathname === '/user/activities' ? (
               <EventRegistrationsSection />
+            ) : pathname === '/user/results' ? (
+              <MyResults />
             ) : user?.username &&
               routeUsername?.toLowerCase() === user.username.toLowerCase() ? (
               <DashboardDiscover user={user} />

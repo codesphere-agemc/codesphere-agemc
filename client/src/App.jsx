@@ -62,6 +62,10 @@ import Recruitments from './pages/Recruitments';
 import RecruitmentDetail from './pages/RecruitmentDetail';
 import RecruitmentEditor from './pages/RecruitmentEditor';
 import AdminRecruitments from './pages/AdminRecruitments';
+import Results from './pages/Results';
+import ResultDetail from './pages/ResultDetail';
+import AdminResults from './pages/AdminResults';
+import ResultEditor from './pages/ResultEditor';
 
 import UserDashboard from './pages/UserDashboard';
 import { AdminToolLayout } from './components/AdminNav';
@@ -167,6 +171,7 @@ function AppRoutes() {
     '/user/milestone',
     '/user/profile',
     '/user/activities',
+    '/user/results',
     '/user/discover',
     '/user/projects',
     '/user/skills',
@@ -217,6 +222,11 @@ function AppRoutes() {
       <Route path="/recruitments/:id/edit" element={<ProtectedRoute anyRole><RecruitmentEditor /></ProtectedRoute>} />
       <Route path="/recruitments/:slug" element={<RecruitmentDetail />} />
       <Route path="/admin/recruitments" element={<ProtectedRoute adminOnly><AdminToolLayout><AdminRecruitments /></AdminToolLayout></ProtectedRoute>} />
+      <Route path="/results" element={<ProtectedRoute anyRole><Results /></ProtectedRoute>} />
+      <Route path="/results/:slug" element={<ProtectedRoute anyRole><ResultDetail /></ProtectedRoute>} />
+      <Route path="/admin/results" element={<ProtectedRoute staff="hackathon-organizer"><AdminToolLayout><AdminResults /></AdminToolLayout></ProtectedRoute>} />
+      <Route path="/admin/results/new" element={<ProtectedRoute staff="hackathon-organizer"><AdminToolLayout><ResultEditor /></AdminToolLayout></ProtectedRoute>} />
+      <Route path="/admin/results/:id/edit" element={<ProtectedRoute staff="hackathon-organizer"><AdminToolLayout><ResultEditor /></AdminToolLayout></ProtectedRoute>} />
       <Route path="/admin/projects" element={<ProtectedRoute staff="project-reviewer"><AdminToolLayout><AdminProjects /></AdminToolLayout></ProtectedRoute>} />
       
       <Route path="/hackathons" element={<ProtectedRoute anyRole><Hackathons /></ProtectedRoute>} />
