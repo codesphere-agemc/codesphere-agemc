@@ -65,7 +65,7 @@ export default function RecentUpdates() {
           {items.map((item) => {
             const kind = KIND[item.kind] || KIND.update;
             return (
-              <Link key={item.link} to={item.link} className={`ru-card ru-tone-${kind.tone}`}>
+              <Link key={item.link} to={item.link} className={`ru-card ru-tone-${kind.tone} ${item.ended ? 'is-ended' : ''}`}>
                 <div className="ru-banner">
                   <img
                     src={item.image || DEFAULT_BANNER}
@@ -77,6 +77,9 @@ export default function RecentUpdates() {
                     }}
                   />
                   <span className="ru-label"><i className={`bi ${kind.icon}`} aria-hidden="true" /> {item.label}</span>
+                  {item.ended && (
+                    <span className="ru-ended"><i className="bi bi-flag-fill" aria-hidden="true" /> {item.ended}</span>
+                  )}
                 </div>
                 <div className="ru-body">
                   <h3>{item.title}</h3>

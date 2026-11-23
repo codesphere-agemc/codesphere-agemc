@@ -81,16 +81,22 @@ router.get('/recent', async (req, res) => {
     safe(Project.find({ status: 'published', visibility: 'public' }).sort({ publishedAt: -1 }).limit(take).lean()),
   ]);
 
+  const now = new Date();
+  const before = (d) => Boolean(d) && new Date(d) < now;
+  // 'ended' puts an Ended/Closed note on the card's banner.
   const items = [
     ...(events || []).map((e) => ({
+      ended: before(e.endDate || e.date) ? 'Ended' : '',
       kind: 'event', label: e.category || 'Event', title: e.title, image: e.bannerImage?.url || '',
       text: clip(stripHtml(e.description)), meta: e.date, at: e.createdAt, link: `/events/${e.slug}`,
     })),
     ...(hackathons || []).map((h) => ({
+      ended: h.resultsPublished || before(h.submissionEnd) ? 'Ended' : '',
       kind: 'hackathon', label: 'Hackathon', title: h.title, image: h.bannerUrl || '',
       text: clip(h.tagline || stripHtml(h.description)), meta: h.regEnd, at: h.createdAt, link: `/hackathons/${h.slug}`,
     })),
     ...(recruitments || []).map((r) => ({
+      ended: r.status === 'closed' || before(r.applyBy) ? 'Closed' : '',
       kind: 'recruitment', label: r.type === 'interview' ? 'Interview' : 'Recruitment', title: `${r.organization}: ${r.title}`, image: r.banner?.url || '',
       text: clip(r.summary || stripHtml(r.description)), meta: r.applyBy, at: r.reviewedAt || r.createdAt, link: `/recruitments/${r.slug}`,
     })),

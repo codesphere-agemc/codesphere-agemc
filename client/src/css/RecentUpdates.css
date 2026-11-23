@@ -79,3 +79,13 @@
   .ru-live { animation: none; }
   .ru-card, .ru-banner img, .ru-go i { transition: none; }
 }
+
+/* Ended / Closed note on the banner */
+.ru-ended {
+  position: absolute; top: 10px; right: 10px; display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px;
+  border-radius: 999px; background: rgba(16, 36, 58, .88); color: #fff; font-size: .72rem; font-weight: 800; letter-spacing: .04em;
+  text-transform: uppercase; box-shadow: 0 4px 12px rgba(9, 24, 39, .25);
+}
+.ru-ended i { color: #ff8568; font-size: .7rem; }
+.ru-card.is-ended .ru-banner img { filter: grayscale(.55) brightness(.85); }
+.ru-card.is-ended:hover .ru-banner img { filter: grayscale(.2) brightness(.95); }
