@@ -23,6 +23,7 @@ const KIND = {
   puzzle: { icon: 'bi-arrow-repeat', tone: 'purple' },
   guided: { icon: 'bi-signpost-split', tone: 'navy' },
   news: { icon: 'bi-newspaper', tone: 'green' },
+  result: { icon: 'bi-award', tone: 'orange' },
 };
 
 const ago = (date) => {

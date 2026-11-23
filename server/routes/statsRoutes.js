@@ -65,6 +65,7 @@ router.get('/landing', async (req, res) => {
 // newest first, for the "Recent updates" strip on the home page. Cached 5 min.
 const { Recruitment } = require('../models/Recruitment');
 const Announcement = require('../models/Announcement');
+const Result = require('../models/Result');
 
 let recentCache = null;
 // Rebuilt at most every 2 minutes, so new posts show up quickly.
@@ -75,7 +76,7 @@ const clip = (text = '', n = 120) => (text.length > n ? `${text.slice(0, n - 1)}
 router.get('/recent', async (req, res) => {
   if (recentCache && Date.now() - recentCache.at < RECENT_CACHE_MS) return res.json(recentCache.body);
   const take = 6;
-  const [events, hackathons, recruitments, announcements, projects, guides, puzzles, guided, digests] = await Promise.all([
+  const [events, hackathons, recruitments, announcements, projects, guides, puzzles, guided, digests, results] = await Promise.all([
     safe(Event.find({ status: 'published' }).sort({ createdAt: -1 }).limit(take).lean()),
     safe(Hackathon.find({ status: 'published' }).sort({ createdAt: -1 }).limit(take).lean()),
     safe(Recruitment.find({ status: { $in: ['published', 'closed'] } }).sort({ updatedAt: -1 }).limit(take).lean()),
@@ -85,6 +86,7 @@ router.get('/recent', async (req, res) => {
     safe(ReverseChallenge.find({ status: 'published', $or: [{ publishedAt: null }, { publishedAt: { $lte: new Date() } }] }).sort({ publishedAt: -1, createdAt: -1 }).limit(take).lean()),
     safe(GuidedProject.find({ status: 'published' }).sort({ createdAt: -1 }).limit(take).lean()),
     safe(NewsDigest.find({ status: 'published', publishedAt: { $lte: new Date() } }).sort({ publishedAt: -1 }).limit(take).lean()),
+    safe(Result.find({ status: 'published' }).select('slug title summary organization banner publishedAt').sort({ publishedAt: -1 }).limit(take).lean()),
   ]);
 
   const now = new Date();
@@ -109,6 +111,10 @@ router.get('/recent', async (req, res) => {
     ...(announcements || []).map((a) => ({
       kind: 'update', label: 'Announcement', title: a.title, image: (a.attachments || []).find((f) => f.type === 'image')?.url || '',
       text: clip(stripHtml(a.body)), meta: null, at: a.publishedAt || a.createdAt, link: `/updates/${a._id}`,
+    })),
+    ...(results || []).map((r) => ({
+      kind: 'result', label: 'Results', title: r.title, image: r.banner?.url || '',
+      text: clip(r.summary || `Results from ${r.organization || 'CodeSphere'} are out.`), meta: null, at: r.publishedAt, link: `/results/${r.slug}`,
     })),
     ...(guides || []).map((g) => ({
       kind: 'guide', label: 'Study guide', title: g.title, image: '',
