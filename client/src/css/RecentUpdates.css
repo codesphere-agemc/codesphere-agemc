@@ -89,3 +89,36 @@
 .ru-ended i { color: #ff8568; font-size: .7rem; }
 .ru-card.is-ended .ru-banner img { filter: grayscale(.55) brightness(.85); }
 .ru-card.is-ended:hover .ru-banner img { filter: grayscale(.2) brightness(.95); }
+
+
+/* ---------- Continuous marquee ---------- */
+.ru-marquee {
+  position: relative; overflow: hidden; padding: 6px 0 16px;
+  /* Fade the cards in and out at the edges. */
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+}
+.ru-marquee-track {
+  display: flex; gap: 16px; width: max-content; padding-left: 16px;
+  animation: ru-slide var(--ru-duration, 36s) linear infinite;
+}
+.ru-marquee-track .ru-card { flex: none; width: 300px; }
+/* Pause to read or click. */
+.ru-marquee:hover .ru-marquee-track,
+.ru-marquee:focus-within .ru-marquee-track,
+.ru-marquee.is-paused .ru-marquee-track { animation-play-state: paused; }
+@keyframes ru-slide {
+  from { transform: translateX(0); }
+  to { transform: translateX(calc(-50% - 8px)); } /* one full set of cards plus half a gap */
+}
+@media (max-width: 575.98px) {
+  .ru-marquee-track .ru-card { width: 250px; }
+  .ru-marquee-track { gap: 12px; }
+  @keyframes ru-slide { to { transform: translateX(calc(-50% - 6px)); } }
+}
+/* Reduced motion: no animation, just a scrollable row (copies hidden). */
+@media (prefers-reduced-motion: reduce) {
+  .ru-marquee { overflow-x: auto; -webkit-mask-image: none; mask-image: none; }
+  .ru-marquee-track { animation: none; }
+  .ru-marquee-track [aria-hidden='true'] { display: none; }
+}
