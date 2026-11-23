@@ -7,15 +7,22 @@ import '../css/RecentUpdates.css';
 const DEFAULT_BANNER = '/default-profile-banner.webp';
 // Seconds each card takes to glide past (sets the marquee speed).
 const SECONDS_PER_CARD = 6;
+// How often the open page checks for new updates.
+const REFRESH_MS = 2 * 60 * 1000;
 
-// "Recent updates": the latest 6 events, hackathons, recruitments/interviews,
-// announcements and projects, as a continuously gliding strip of banner cards.
+// "Recent updates": the latest 6 items from every section (events, hackathons,
+// recruitments, announcements, projects, guides, puzzles, guided projects and
+// the Tech Brief), as a continuously gliding strip of banner cards.
 const KIND = {
   event: { icon: 'bi-calendar-event', tone: 'blue' },
   hackathon: { icon: 'bi-trophy', tone: 'purple' },
   recruitment: { icon: 'bi-person-badge', tone: 'orange' },
   update: { icon: 'bi-megaphone', tone: 'green' },
   project: { icon: 'bi-rocket-takeoff', tone: 'navy' },
+  guide: { icon: 'bi-journal-bookmark', tone: 'blue' },
+  puzzle: { icon: 'bi-arrow-repeat', tone: 'purple' },
+  guided: { icon: 'bi-signpost-split', tone: 'navy' },
+  news: { icon: 'bi-newspaper', tone: 'green' },
 };
 
 const ago = (date) => {
@@ -65,13 +72,25 @@ export default function RecentUpdates() {
   const [items, setItems] = useState(null);
   const [paused, setPaused] = useState(false);
 
+  // Fetch now, then keep it fresh: every couple of minutes while the page is
+  // open, and whenever the visitor comes back to the tab.
   useEffect(() => {
     let cancelled = false;
-    apiRequest('/stats/recent')
+    const load = () => apiRequest('/stats/recent')
       .then((r) => !cancelled && setItems(r.items || []))
-      .catch(() => !cancelled && setItems([]));
+      .catch(() => !cancelled && setItems((current) => current || []));
+    load();
+    const timer = window.setInterval(() => {
+      if (!document.hidden) load();
+    }, REFRESH_MS);
+    const onVisible = () => {
+      if (!document.hidden) load();
+    };
+    document.addEventListener('visibilitychange', onVisible);
     return () => {
       cancelled = true;
+      window.clearInterval(timer);
+      document.removeEventListener('visibilitychange', onVisible);
     };
   }, []);
 
