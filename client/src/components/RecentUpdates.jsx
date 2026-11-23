@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { apiRequest } from '../lib/api';
 import '../css/RecentUpdates.css';
@@ -71,7 +71,12 @@ function Card({ item, copy }) {
 
 export default function RecentUpdates() {
   const [items, setItems] = useState(null);
-  const [paused, setPaused] = useState(false);
+  const scrollerRef = useRef(null);
+  const hovering = useRef(false);
+  const interacting = useRef(false);
+  const resumeAt = useRef(0);
+  const drag = useRef(null);
+  const dragMoved = useRef(false);
 
   // Fetch now, then keep it fresh: every couple of minutes while the page is
   // open, and whenever the visitor comes back to the tab.
@@ -95,7 +100,81 @@ export default function RecentUpdates() {
     };
   }, []);
 
-  if (!items?.length) return null;
+  const hasItems = Boolean(items?.length);
+
+  // Gentle auto-scroll that people can take over: it nudges scrollLeft each
+  // frame, wraps seamlessly (the cards are listed twice), and stands aside
+  // while someone hovers, swipes, drags or scrolls, resuming shortly after.
+  useEffect(() => {
+    const el = scrollerRef.current;
+    if (!hasItems || !el) return undefined;
+    const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    let frame = 0;
+    let last = 0;
+    let pos = el.scrollLeft;
+
+    const wrap = () => {
+      const half = el.scrollWidth / 2;
+      if (half <= 0) return;
+      if (el.scrollLeft >= half) el.scrollLeft -= half;
+      else if (el.scrollLeft <= 0 && interacting.current) el.scrollLeft += half;
+    };
+
+    const tick = (time) => {
+      frame = requestAnimationFrame(tick);
+      const dt = last ? Math.min(time - last, 50) : 16;
+      last = time;
+      const busy = hovering.current || interacting.current || Date.now() < resumeAt.current || document.hidden;
+      if (busy) {
+        pos = el.scrollLeft;
+        return;
+      }
+      const card = el.querySelector('.ru-card');
+      const speed = ((card?.offsetWidth || 300) + 16) / (SECONDS_PER_CARD * 1000); // px per ms
+      pos += speed * dt;
+      el.scrollLeft = pos;
+      if (el.scrollLeft >= el.scrollWidth / 2) {
+        pos -= el.scrollWidth / 2;
+        el.scrollLeft = pos;
+      }
+    };
+    if (!reduced) frame = requestAnimationFrame(tick);
+
+    // Manual scrolling (finger, trackpad, wheel, drag) keeps looping too.
+    const onScroll = () => {
+      if (interacting.current || Date.now() < resumeAt.current) wrap();
+    };
+    el.addEventListener('scroll', onScroll, { passive: true });
+    return () => {
+      cancelAnimationFrame(frame);
+      el.removeEventListener('scroll', onScroll);
+    };
+  }, [hasItems]);
+
+  if (!hasItems) return null;
+
+  const holdFor = (ms) => { resumeAt.current = Date.now() + ms; };
+
+  // Mouse drag to scroll on desktop (touch scrolls natively).
+  const onPointerDown = (e) => {
+    if (e.pointerType !== 'mouse' || e.button !== 0) return;
+    drag.current = { x: e.clientX, left: scrollerRef.current.scrollLeft, moved: false };
+    interacting.current = true;
+  };
+  const onPointerMove = (e) => {
+    const d = drag.current;
+    if (!d) return;
+    const dx = e.clientX - d.x;
+    if (Math.abs(dx) > 4) d.moved = true;
+    if (d.moved) scrollerRef.current.scrollLeft = d.left - dx;
+  };
+  const endDrag = () => {
+    if (!drag.current) return;
+    dragMoved.current = drag.current.moved;
+    drag.current = null;
+    interacting.current = false;
+    holdFor(2000);
+  };
 
   return (
     <section className="ru" aria-labelledby="ru-title">
@@ -107,15 +186,32 @@ export default function RecentUpdates() {
           </div>
         </div>
 
-        {/* A smooth, endless marquee inside the page's content width: the cards
-            are shown twice and slide left by exactly one set, so the loop has
-            no visible jump. Hover, focus or a tap pauses it. */}
+        {/* Glides on its own and loops seamlessly (the cards are listed twice);
+            swipe, scroll sideways or drag to move it by hand. */}
         <div
-          className={`ru-marquee ${paused ? 'is-paused' : ''}`}
-          onTouchStart={() => setPaused(true)}
-          onTouchEnd={() => window.setTimeout(() => setPaused(false), 3000)}
+          ref={scrollerRef}
+          className="ru-marquee"
+          onMouseEnter={() => { hovering.current = true; }}
+          onMouseLeave={() => { hovering.current = false; endDrag(); }}
+          onTouchStart={() => { interacting.current = true; }}
+          onTouchEnd={() => { interacting.current = false; holdFor(2500); }}
+          onWheel={() => holdFor(2000)}
+          onPointerDown={onPointerDown}
+          onPointerMove={onPointerMove}
+          onPointerUp={endDrag}
+          onFocus={() => { hovering.current = true; }}
+          onBlur={() => { hovering.current = false; }}
+          // A drag shouldn't count as a click on the card under the mouse.
+          onClickCapture={(e) => {
+            if (dragMoved.current) {
+              e.preventDefault();
+              e.stopPropagation();
+              dragMoved.current = false;
+            }
+          }}
+          onDragStart={(e) => e.preventDefault()}
         >
-          <div className="ru-marquee-track" style={{ '--ru-duration': `${items.length * SECONDS_PER_CARD}s` }}>
+          <div className="ru-marquee-track">
             {items.map((item) => <Card key={item.link} item={item} />)}
             {items.map((item) => <Card key={`copy-${item.link}`} item={item} copy />)}
           </div>
