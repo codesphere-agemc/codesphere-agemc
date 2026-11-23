@@ -11,6 +11,17 @@ const { Hackathon, HackathonTeam, HackathonSubmission } = require('../models/Hac
 const { Recruitment, RecruitmentApplication } = require('../models/Recruitment');
 const { protect, requireStaff } = require('../middleware/authMiddleware');
 const { notify } = require('../utils/notify');
+const multer = require('multer');
+const { storeImage, deleteImages } = require('../utils/forumMedia');
+
+// Banner upload: one JPEG/PNG/WebP image, up to 5 MB (contents are checked too).
+const bannerUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024, files: 1 },
+  fileFilter: (req, file, cb) => (['image/jpeg', 'image/png', 'image/webp'].includes(file.mimetype)
+    ? cb(null, true)
+    : cb(new Error('The banner must be a JPEG, PNG or WebP image.'))),
+});
 
 const router = express.Router();
 
@@ -209,6 +220,7 @@ function card(r) {
     category: r.category,
     organization: r.organization,
     summary: r.summary,
+    banner: r.banner?.url || '',
     heldOn: r.heldOn,
     visibility: r.visibility,
     status: r.status,
@@ -339,6 +351,40 @@ async function save(req, res) {
   return res.status(req.params.id ? 200 : 201).json({ id: String(r._id), slug: r.slug, unlinked: data.entries.filter((e) => e.identities.length && !e.users.length).map((e) => e.name) });
 }
 
+// PUT /api/results/admin/:id/banner  (multipart "banner"): add or replace the banner.
+router.put('/admin/:id/banner', organizer, (req, res, next) => bannerUpload.single('banner')(req, res, (error) => {
+  if (error) return res.status(400).json({ message: error.code === 'LIMIT_FILE_SIZE' ? 'The banner must be 5 MB or smaller.' : error.message });
+  if (!req.file) return res.status(400).json({ message: 'Choose an image.' });
+  return next();
+}), async (req, res) => {
+  if (!isId(req.params.id)) return res.status(404).json({ message: 'Not found.' });
+  const r = await Result.findById(req.params.id);
+  if (!r) return res.status(404).json({ message: 'Not found.' });
+  let stored;
+  try {
+    stored = await storeImage(req.file.buffer, req.user._id, 'results');
+  } catch (e) {
+    return res.status(e.status || 500).json({ message: e.status ? e.message : 'Could not upload the banner. Try again.' });
+  }
+  const old = r.banner?.fileId;
+  r.banner = stored;
+  await r.save();
+  if (old) await deleteImages([{ fileId: old }]);
+  return res.json({ banner: r.banner.url });
+});
+
+// DELETE /api/results/admin/:id/banner
+router.delete('/admin/:id/banner', organizer, async (req, res) => {
+  if (!isId(req.params.id)) return res.status(404).json({ message: 'Not found.' });
+  const r = await Result.findById(req.params.id);
+  if (!r) return res.status(404).json({ message: 'Not found.' });
+  const old = r.banner?.fileId;
+  r.banner = { url: '', fileId: '' };
+  await r.save();
+  if (old) await deleteImages([{ fileId: old }]);
+  return res.json({ banner: '' });
+});
+
 router.post('/admin', organizer, save);
 router.put('/admin/:id', organizer, save);
 
@@ -370,7 +416,8 @@ router.post('/admin/:id/publish', organizer, async (req, res) => {
 // DELETE /api/results/admin/:id
 router.delete('/admin/:id', organizer, async (req, res) => {
   if (!isId(req.params.id)) return res.status(404).json({ message: 'Not found.' });
-  await Result.deleteOne({ _id: req.params.id });
+  const removed = await Result.findByIdAndDelete(req.params.id).lean();
+  if (removed?.banner?.fileId) await deleteImages([{ fileId: removed.banner.fileId }]);
   res.json({ ok: true });
 });
 
