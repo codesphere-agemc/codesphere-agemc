@@ -80,7 +80,8 @@ export default function ResultDetail() {
     <>
       <Navbar />
       <main className="res-page">
-        <header className={`res-detail-hero cat-${r.category}`}>
+        <header className={`res-detail-hero cat-${r.category} ${r.banner ? 'has-banner' : ''}`}>
+          {r.banner && <img src={r.banner} alt="" className="res-detail-banner" />}
           <div className="container">
             <Link to="/results" className="res-back"><i className="bi bi-arrow-left" aria-hidden="true" /> All results</Link>
             <div className="res-detail-head">

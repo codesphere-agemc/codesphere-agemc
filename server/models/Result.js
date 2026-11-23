@@ -53,6 +53,11 @@ const resultSchema = new Schema(
     },
     organization: { type: String, trim: true, maxlength: 100, default: 'CodeSphere' },
     summary: { type: String, trim: true, maxlength: 300, default: '' },
+    // Banner image (ImageKit), shown on the results page, cards and emails.
+    banner: {
+      url: { type: String, default: '' },
+      fileId: { type: String, default: '' },
+    },
     notes: { type: String, trim: true, maxlength: 4000, default: '' }, // how it was judged, next steps…
     heldOn: Date,
     // Where the participants came from (optional).

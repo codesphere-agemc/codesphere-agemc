@@ -98,7 +98,8 @@ export default function Results() {
             {shown.map((r) => {
               const cat = CATEGORY[r.category] || CATEGORY.other;
               return (
-                <Link key={r.id} to={`/results/${r.slug}`} className={`res-card cat-${r.category}`}>
+                <Link key={r.id} to={`/results/${r.slug}`} className={`res-card cat-${r.category} ${r.banner ? 'has-banner' : ''}`}>
+                  {r.banner && <img src={r.banner} alt="" className="res-card-banner" loading="lazy" />}
                   <div className="res-card-top">
                     <span className={`res-cat cat-${r.category}`}><i className={`bi ${cat.icon}`} aria-hidden="true" /> {cat.label}</span>
                     {r.mine && <span className="res-you-tag"><i className="bi bi-person-check-fill" aria-hidden="true" /> You took part</span>}

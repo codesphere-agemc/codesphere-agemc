@@ -48,11 +48,16 @@ export default function ResultEditor() {
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState({ type: '', text: '' });
   const [sortByRank, setSortByRank] = useState(false);
+  // Banner: the saved image, or (for a new result) a picked file uploaded on first save.
+  const [banner, setBanner] = useState('');
+  const [pendingBanner, setPendingBanner] = useState(null);
+  const [bannerBusy, setBannerBusy] = useState(false);
 
   useEffect(() => {
     if (!id) return;
     apiRequest(`/results/admin/${id}`)
       .then(({ result: r }) => {
+        setBanner(r.banner || '');
         setForm({
           title: r.title, category: r.category, organization: r.organization, heldOn: toDateInput(r.heldOn),
           summary: r.summary || '', notes: r.notes || '', visibility: r.visibility,
@@ -204,6 +209,57 @@ export default function ResultEditor() {
     setMsg({ type: 'ok', text: `Added ${rows.length} row${rows.length === 1 ? '' : 's'} from the pasted list.` });
   };
 
+  // ---- Banner ----
+  const uploadBanner = async (resultId, file) => {
+    const body = new FormData();
+    body.append('banner', file, file.name);
+    const r = await apiRequest(`/results/admin/${resultId}/banner`, { method: 'PUT', body });
+    setBanner(r.banner);
+    setPendingBanner(null);
+  };
+
+  const pickBanner = async (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      setMsg({ type: 'error', text: 'The banner must be 5 MB or smaller.' });
+      return;
+    }
+    if (!id) {
+      // Not saved yet: preview now, upload on first save.
+      setPendingBanner(file);
+      setBanner(URL.createObjectURL(file));
+      return;
+    }
+    setBannerBusy(true);
+    try {
+      await uploadBanner(id, file);
+      setMsg({ type: 'ok', text: 'Banner updated.' });
+    } catch (err) {
+      setMsg({ type: 'error', text: err.message });
+    } finally {
+      setBannerBusy(false);
+    }
+  };
+
+  const removeBanner = async () => {
+    if (!id) {
+      setPendingBanner(null);
+      setBanner('');
+      return;
+    }
+    setBannerBusy(true);
+    try {
+      await apiRequest(`/results/admin/${id}/banner`, { method: 'DELETE' });
+      setBanner('');
+    } catch (err) {
+      setMsg({ type: 'error', text: err.message });
+    } finally {
+      setBannerBusy(false);
+    }
+  };
+
   // ---- Save ----
   const save = async (publish) => {
     setBusy(true);
@@ -228,6 +284,8 @@ export default function ResultEditor() {
     };
     try {
       const saved = await apiRequest(id ? `/results/admin/${id}` : '/results/admin', { method: id ? 'PUT' : 'POST', body: JSON.stringify(payload) });
+      // A banner picked before the first save goes up now.
+      if (pendingBanner) await uploadBanner(saved.id, pendingBanner);
       if (publish !== undefined) {
         await apiRequest(`/results/admin/${saved.id}/publish`, { method: 'POST', body: JSON.stringify({ publish, notify: publish }) });
       }
@@ -337,6 +395,27 @@ export default function ResultEditor() {
               <label className="wide"><span>Summary <small>(optional)</small></span><input value={form.summary} onChange={set('summary')} maxLength={300} placeholder="Final round judged by a panel of 4 industry mentors." /></label>
               <label className="wide"><span>Notes for participants <small>(optional)</small></span><textarea rows={3} value={form.notes} onChange={set('notes')} maxLength={4000} placeholder="How judging worked, tie-breaks, next steps for selected candidates…" /></label>
             </div>
+          </section>
+
+          <section className="res-panel">
+            <h2><i className="bi bi-image" aria-hidden="true" /> Banner <small className="res-muted">(optional)</small></h2>
+            <p className="res-muted">Shown at the top of the results page, on its card, in emails and in Recent updates on the home page. JPG, PNG or WebP, up to 5 MB. A wide image (about 1600 × 600) works best.</p>
+            <label className={`res-banner-pick ${banner ? 'has-image' : ''}`}>
+              {banner
+                ? <img src={banner} alt="Results banner preview" />
+                : <span><i className={`bi ${bannerBusy ? 'bi-arrow-repeat' : 'bi-cloud-arrow-up'}`} aria-hidden="true" /> {bannerBusy ? 'Uploading…' : 'Click to upload a banner'}</span>}
+              <input type="file" accept="image/jpeg,image/png,image/webp" onChange={pickBanner} disabled={bannerBusy} hidden />
+            </label>
+            {banner && (
+              <div className="res-banner-actions">
+                <label className="res-btn">
+                  <i className="bi bi-arrow-repeat" aria-hidden="true" /> {bannerBusy ? 'Uploading…' : 'Replace'}
+                  <input type="file" accept="image/jpeg,image/png,image/webp" onChange={pickBanner} disabled={bannerBusy} hidden />
+                </label>
+                <button type="button" className="res-btn" onClick={removeBanner} disabled={bannerBusy}><i className="bi bi-trash3" aria-hidden="true" /> Remove</button>
+                {pendingBanner && <span className="res-muted">Uploads when you save.</span>}
+              </div>
+            )}
           </section>
 
           <section className="res-panel">
