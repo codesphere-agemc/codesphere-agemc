@@ -3,6 +3,9 @@ import { Link } from 'react-router-dom';
 import { apiRequest } from '../lib/api';
 import '../css/RecentUpdates.css';
 
+// Posts without their own banner get the CodeSphere banner.
+const DEFAULT_BANNER = '/default-profile-banner.webp';
+
 // "Recent updates": the latest 6 events, hackathons, recruitments/interviews,
 // announcements and projects, as a swipeable strip of banner cards.
 const KIND = {
@@ -64,9 +67,15 @@ export default function RecentUpdates() {
             return (
               <Link key={item.link} to={item.link} className={`ru-card ru-tone-${kind.tone}`}>
                 <div className="ru-banner">
-                  {item.image
-                    ? <img src={item.image} alt="" loading="lazy" />
-                    : <i className={`bi ${kind.icon}`} aria-hidden="true" />}
+                  <img
+                    src={item.image || DEFAULT_BANNER}
+                    alt=""
+                    loading="lazy"
+                    onError={(e) => {
+                      // A broken banner link also falls back to the CodeSphere banner.
+                      if (!e.currentTarget.src.endsWith(DEFAULT_BANNER)) e.currentTarget.src = DEFAULT_BANNER;
+                    }}
+                  />
                   <span className="ru-label"><i className={`bi ${kind.icon}`} aria-hidden="true" /> {item.label}</span>
                 </div>
                 <div className="ru-body">
