@@ -9,7 +9,7 @@ const imagekit = require("./config/imagekit");
 
 console.log("ImageKit client initialized:", !!imagekit);
 
-const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173' || 'http://localhost:5175';
+const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
 app.use(cors({
   origin: (origin, callback) => {
     if (!origin || origin === clientUrl || /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) {
