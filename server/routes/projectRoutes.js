@@ -177,7 +177,7 @@ async function readForm(b) {
     problem: clean(b.problem, 3000),
     solution: clean(b.solution, 5000),
     features: list(b.features, 12, 160),
-    contribution: clean(b.contribution, 1500),
+    contribution: clean(b.contribution, 1500) || (b.teamType === 'team' ? 'Team contributor' : 'Lead author and creator.'),
     outcomes: clean(b.outcomes, 1500),
     limitations: clean(b.limitations, 1500),
     category: PROJECT_CATEGORIES.includes(b.category) ? b.category : 'other',
@@ -202,9 +202,8 @@ async function readForm(b) {
 // Required before a project can be sent for review.
 function submissionProblems(p) {
   const problems = [];
-  if ((p.summary || '').length < 20) problems.push('Write a one-line summary (20+ characters).');
-  if ((p.solution || '').length < 50) problems.push('Explain what the project does (50+ characters).');
-  if ((p.contribution || '').length < 20) problems.push('Describe your role / contribution.');
+  if ((p.summary || '').length < 15) problems.push('Write a short summary (15+ characters).');
+  if ((p.solution || '').length < 30) problems.push('Describe what the project does (30+ characters).');
   if (!p.techStack?.length) problems.push('Add the technologies used.');
   if (!p.authorshipConfirmed) problems.push('Confirm you built or contributed to this project.');
   if (p.teamType === 'team' && (p.contributors || []).length < 2) problems.push('List every team member (at least two).');
