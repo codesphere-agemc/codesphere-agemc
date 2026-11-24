@@ -191,6 +191,21 @@ function Field({ label, hint, required, wide, children }) {
   );
 }
 
+function combineStory(p) {
+  if (!p) return '';
+  if (p.solution && !p.problem && !p.outcomes && !p.limitations && !p.features?.length) {
+    return p.solution;
+  }
+  const parts = [];
+  if (p.problem) parts.push(`The Problem:\n${p.problem}`);
+  if (p.solution) parts.push(`What it does:\n${p.solution}`);
+  if (p.features?.length) parts.push(`Key Features:\n${p.features.map((f) => `• ${f}`).join('\n')}`);
+  if (p.contribution) parts.push(`Contribution:\n${p.contribution}`);
+  if (p.outcomes) parts.push(`What I Learned:\n${p.outcomes}`);
+  if (p.limitations) parts.push(`Limitations & Next Steps:\n${p.limitations}`);
+  return parts.length ? parts.join('\n\n') : (p.solution || '');
+}
+
 export default function ProjectEditor() {
   const { id } = useParams();
   const [params] = useSearchParams();
@@ -248,6 +263,7 @@ export default function ProjectEditor() {
         setForm({
           ...EMPTY,
           ...Object.fromEntries(Object.keys(EMPTY).map((k) => [k, p[k] ?? EMPTY[k]])),
+          solution: combineStory(p),
           features: (p.features || []).join('\n'),
           techStack: (p.techStack || []).join(', '),
           tags: (p.tags || []).join(', '),
@@ -562,14 +578,24 @@ export default function ProjectEditor() {
 
                 <section className="pe-card">
                   <h2>Project story</h2>
-                  <div className="pe-grid">
-                    <Field label="Problem" wide hint="Who is it for, and what problem does it solve?"><textarea rows={3} value={form.problem} onChange={set('problem')} maxLength={3000} /></Field>
-                    <Field label="What it does" required wide hint="Your solution and how it works (50+ characters)"><textarea rows={5} value={form.solution} onChange={set('solution')} maxLength={5000} /></Field>
-                    <Field label="Key features" wide hint="One per line"><textarea rows={4} value={form.features} onChange={set('features')} /></Field>
-                    <Field label="Your role / contribution" required wide hint="What did you personally build?"><textarea rows={3} value={form.contribution} onChange={set('contribution')} maxLength={1500} /></Field>
-                    <Field label="What you learned" wide><textarea rows={3} value={form.outcomes} onChange={set('outcomes')} maxLength={1500} /></Field>
-                    <Field label="Known limitations / next steps" wide><textarea rows={2} value={form.limitations} onChange={set('limitations')} maxLength={1500} /></Field>
-                  </div>
+                  <Field label="Description" required wide hint="Describe your project story (30+ characters)">
+                    <div className="pe-story-guide">
+                      <strong>💡 Suggestion — What to include in your description:</strong>
+                      <ul>
+                        <li><strong>The Problem:</strong> What challenge does this project address and who is it for?</li>
+                        <li><strong>What It Does & Key Features:</strong> How it works, core functionality, and features</li>
+                        <li><strong>Your Role & Contribution:</strong> What you personally built or designed</li>
+                        <li><strong>Learnings & Next Steps:</strong> Skills learned, current limitations, or planned improvements</li>
+                      </ul>
+                    </div>
+                    <textarea
+                      rows={8}
+                      value={form.solution}
+                      onChange={set('solution')}
+                      maxLength={5000}
+                      placeholder="Write your project story here... Mention the problem it solves, what it does, key features, your personal contribution, and what you learned."
+                    />
+                  </Field>
                 </section>
 
                 <section className="pe-card">
