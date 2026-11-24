@@ -203,6 +203,20 @@
 .res-notes h3 { margin: 0 0 6px; font-size: .9rem; font-weight: 800; }
 .res-notes p { margin: 0; color: #34465a; font-size: .86rem; line-height: 1.55; white-space: pre-line; }
 
+.res-lead-summary { margin-top: 6px; }
+.res-rich-content { color: inherit; font-size: .86rem; line-height: 1.6; overflow-wrap: anywhere; }
+.res-rich-content p, .res-rich-content ul, .res-rich-content ol { margin: 0 0 8px; }
+.res-rich-content ul, .res-rich-content ol { padding-left: 20px; }
+.res-rich-content li { margin: 2px 0; }
+.res-rich-content > :last-child { margin-bottom: 0; }
+.res-rich-content a { color: inherit; text-decoration: underline; font-weight: 600; }
+.res-rich-content blockquote { margin: 6px 0; padding: 6px 12px; border-left: 3px solid var(--res-coral); background: rgba(240, 120, 104, 0.08); border-radius: 0 6px 6px 0; }
+.res-rich-content pre { margin: 6px 0; padding: 8px 12px; border-radius: 8px; background: #0E1B2B; color: #E2E8F0; font-size: .82rem; overflow-x: auto; }
+.res-rich-content code { padding: 1px 4px; border-radius: 4px; background: rgba(0, 0, 0, 0.05); font-size: .88em; }
+.res-rich-content table { width: 100%; margin: 6px 0; border-collapse: collapse; }
+.res-rich-content th, .res-rich-content td { padding: 6px 8px; border: 1px solid var(--res-line); }
+.res-notes-body { color: #34465a; }
+
 .res-board { min-width: 0; }
 .res-board-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
 .res-board-tools { display: flex; flex-wrap: wrap; gap: 8px; min-width: 0; }
@@ -260,6 +274,9 @@
 .res-form-grid label > span, .res-import-grid label > span, .res-visibility legend { color: var(--res-navy); font-size: .82rem; font-weight: 800; }
 .res-form-grid label > span small { color: var(--res-muted); font-weight: 600; }
 .res-form-grid label > small, .res-import-grid label > small { color: var(--res-muted); font-size: .76rem; }
+.res-rich-field { display: flex; flex-direction: column; gap: 6px; }
+.res-field-label { color: var(--res-navy); font-size: .82rem; font-weight: 800; }
+.res-field-label small { color: var(--res-muted); font-weight: 600; }
 .res-editor input:not([type='radio']):not([type='checkbox']), .res-editor select, .res-editor textarea {
   width: 100%; min-width: 0; padding: 8px 10px; border: 1px solid var(--res-line); border-radius: 10px; background: #fff;
   color: var(--res-navy); font: inherit; font-size: .9rem;

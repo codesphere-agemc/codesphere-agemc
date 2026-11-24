@@ -1,4 +1,5 @@
 const express = require('express');
+const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const User = require('../models/User');
 const { protect, adminOnly, STAFF_ROLES } = require('../middleware/authMiddleware');
@@ -309,15 +310,15 @@ router.get('/search', protect, async (req, res) => {
     const regex = new RegExp(escapedSearch, 'i');
     const users = await User.find({
       role: 'user',
-      _id: { $ne: req.user._id },
       username: { $type: 'string', $ne: '' },
       $or: [
         { name: regex },
         { username: regex },
+        { email: regex },
         { collegeName: regex },
       ],
     })
-      .select('name username collegeName profileImage')
+      .select('name username email collegeName profileImage')
       .sort({ name: 1, username: 1 })
       .limit(12)
       .lean();
@@ -747,7 +748,13 @@ router.delete('/profile/image', protect, async (req, res) => {
 router.get('/profile/:username/coding-stats', protect, async (req, res) => {
   try {
     const { codingStatsForUser } = require('../utils/codingStats');
-    const member = await User.findOne({ username: req.params.username.toLowerCase().trim(), role: 'user' })
+    const rawParam = req.params.username.trim();
+    const isObjectId = mongoose.Types.ObjectId.isValid(rawParam);
+    const filter = isObjectId
+      ? { $or: [{ _id: rawParam }, { username: rawParam.toLowerCase() }], role: 'user' }
+      : { username: rawParam.toLowerCase(), role: 'user' };
+
+    const member = await User.findOne(filter)
       .select('github codingProfiles')
       .lean();
     if (!member) return res.status(404).json({ success: false, message: 'Member profile not found.' });
@@ -759,15 +766,16 @@ router.get('/profile/:username/coding-stats', protect, async (req, res) => {
 });
 
 // GET /api/users/profile/:username
-// GET ANOTHER MEMBER'S PROFILE
+// GET ANOTHER MEMBER'S PROFILE (supports username or user ObjectId)
 router.get('/profile/:username', protect, async (req, res) => {
   try {
-    const username = req.params.username.toLowerCase().trim();
+    const rawParam = req.params.username.trim();
+    const isObjectId = mongoose.Types.ObjectId.isValid(rawParam);
+    const filter = isObjectId
+      ? { $or: [{ _id: rawParam }, { username: rawParam.toLowerCase() }], role: 'user' }
+      : { username: rawParam.toLowerCase(), role: 'user' };
 
-    const member = await User.findOne({
-      username,
-      role: 'user',
-    })
+    const member = await User.findOne(filter)
       .select(
       'name username collegeName degree department yearOfStudy graduationYear profileImage bio github linkedin portfolio technicalInterests skills skillDetails learningGoals codingProfiles achievements createdAt'
       )

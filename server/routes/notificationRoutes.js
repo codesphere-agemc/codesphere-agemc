@@ -42,6 +42,26 @@ router.post('/read', protect, async (req, res) => {
   }
 });
 
+// DELETE /api/notifications/:id: delete a single notification for the logged-in user.
+router.delete('/:id', protect, async (req, res) => {
+  try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({ message: 'Invalid notification id.' });
+    }
+    const result = await Notification.deleteOne({
+      _id: req.params.id,
+      user: req.user._id,
+    });
+    if (!result.deletedCount) {
+      return res.status(404).json({ message: 'Notification not found.' });
+    }
+    res.json({ ok: true });
+  } catch (error) {
+    console.error('Notification delete error:', error);
+    res.status(500).json({ message: 'Could not delete notification.' });
+  }
+});
+
 // PUT /api/notifications/preferences { muted?: [] }.
 router.put('/preferences', protect, async (req, res) => {
   try {

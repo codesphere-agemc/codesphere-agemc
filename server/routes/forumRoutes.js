@@ -76,6 +76,7 @@ function publicAuthor(user) {
   return {
     id: String(user._id),
     name,
+    username: user.username || '',
     initials: name.split(/\s+/).filter(Boolean).slice(0, 2).map((p) => p[0].toUpperCase()).join(''),
     year: user.role === 'admin' ? '' : user.yearOfStudy || '',
     isStaff: user.role === 'admin' || Boolean(user.staffRoles?.includes('moderator')),
@@ -277,14 +278,14 @@ router.get('/threads', optionalAuth, async (req, res) => {
     if (tab === 'trending') {
       // Score recent threads by replies, reactions and views.
       const recent = await ForumThread.find(filter).sort({ lastActivityAt: -1 }).limit(300)
-        .populate('author', 'name yearOfStudy role staffRoles profileImage').lean();
+        .populate('author', 'name username yearOfStudy role staffRoles profileImage').lean();
       recent.sort((a, b) => trendScore(b) - trendScore(a));
       total = recent.length;
       threads = recent.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
     } else {
       const query = ForumThread.find(filter, q ? { score: { $meta: 'textScore' } } : {});
       [threads, total] = await Promise.all([
-        query.sort(sort).skip((page - 1) * PAGE_SIZE).limit(PAGE_SIZE).populate('author', 'name yearOfStudy role staffRoles profileImage').lean(),
+        query.sort(sort).skip((page - 1) * PAGE_SIZE).limit(PAGE_SIZE).populate('author', 'name username yearOfStudy role staffRoles profileImage').lean(),
         ForumThread.countDocuments(filter),
       ]);
     }
@@ -368,7 +369,7 @@ router.post('/threads', protect, limitThreads, async (req, res) => {
 router.get('/threads/:id', optionalAuth, async (req, res) => {
   if (!isId(req.params.id)) return res.status(404).json({ message: 'Discussion not found.' });
   try {
-    const thread = await ForumThread.findById(req.params.id).populate('author', 'name yearOfStudy role staffRoles profileImage').lean();
+    const thread = await ForumThread.findById(req.params.id).populate('author', 'name username yearOfStudy role staffRoles profileImage').lean();
     const staff = isStaff(req.user);
     const mine = sameUser(thread?.author, req.user);
     if (!thread || (thread.status !== 'visible' && !staff && !(mine && thread.status === 'hidden'))) {
@@ -378,7 +379,7 @@ router.get('/threads/:id', optionalAuth, async (req, res) => {
     if (!mine) await ForumThread.updateOne({ _id: thread._id }, { $inc: { viewCount: 1 } });
 
     const replyFilter = { thread: thread._id, status: staff ? { $in: ['visible', 'hidden'] } : 'visible' };
-    const replies = await ForumReply.find(replyFilter).sort({ createdAt: 1 }).populate('author', 'name yearOfStudy role staffRoles profileImage').lean();
+    const replies = await ForumReply.find(replyFilter).sort({ createdAt: 1 }).populate('author', 'name username yearOfStudy role staffRoles profileImage').lean();
 
     let viewer = { signedIn: false };
     if (req.user) {

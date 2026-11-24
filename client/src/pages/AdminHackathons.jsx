@@ -213,7 +213,6 @@ export default function AdminHackathons() {
         <div className="container">
           <div className="hk-admin-head">
             <h1><i className="bi bi-trophy" aria-hidden="true" /> Hackathons</h1>
-            <BroadcastOptions value={broadcastOptions} onChange={setBroadcastOptions} />
             <div className="hk-form-actions">
               <Link to="/hackathons" className="hk-btn">View page</Link>
               <button type="button" className="btn btn-gold" onClick={() => open(null)}><i className="bi bi-plus-lg" aria-hidden="true" /> New hackathon</button>
@@ -272,6 +271,7 @@ export default function AdminHackathons() {
               <button type="button" className="hk-btn" onClick={() => setForm((f) => ({ ...f, prizes: [...f.prizes, { title: '', reward: '' }] }))}><i className="bi bi-plus" aria-hidden="true" /> Add prize</button>
 
               <div className="hk-form-actions">
+                <BroadcastOptions value={broadcastOptions} onChange={setBroadcastOptions} />
                 <button type="submit" className="hk-btn">Save draft</button>
                 <button type="button" className="btn btn-gold" onClick={() => save('published')}>{form.status === 'published' ? 'Save & keep published' : 'Publish'}</button>
                 {form.status === 'published' && <button type="button" className="hk-btn" onClick={() => save('draft')}>Unpublish</button>}

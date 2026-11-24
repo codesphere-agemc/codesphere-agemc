@@ -13,6 +13,7 @@ const { protect, requireStaff } = require('../middleware/authMiddleware');
 const { notify } = require('../utils/notify');
 const multer = require('multer');
 const { storeImage, deleteImages } = require('../utils/forumMedia');
+const sanitizeDescription = require('../utils/sanitizeDescription');
 
 // Banner upload: one JPEG/PNG/WebP image, up to 5 MB (contents are checked too).
 const bannerUpload = multer({
@@ -142,8 +143,8 @@ function validate(body) {
     title: clean(body.title, 120),
     category: CATEGORIES.includes(body.category) ? body.category : 'other',
     organization: clean(body.organization, 100) || 'CodeSphere',
-    summary: clean(body.summary, 300),
-    notes: clean(body.notes, 4000),
+    summary: sanitizeDescription(String(body.summary ?? '').slice(0, 10000)),
+    notes: sanitizeDescription(String(body.notes ?? '').slice(0, 20000)),
     heldOn: toDate(body.heldOn),
     visibility: VISIBILITY.includes(body.visibility) ? body.visibility : 'full',
     passPercent: passPercent === null ? undefined : Math.max(0, Math.min(100, passPercent)),

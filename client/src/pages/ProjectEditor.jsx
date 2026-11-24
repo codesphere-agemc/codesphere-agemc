@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import ProfileAvatar from '../components/ProfileAvatar';
 import { useAuth } from '../context/AuthContext';
 import { useNotice } from '../context/NoticeContext';
 import { apiRequest } from '../lib/api';
@@ -14,6 +15,126 @@ const EMPTY = {
   category: 'web', level: 'Beginner', projectStatus: 'completed', teamType: 'individual', contributors: [],
   techStack: '', tags: '', demoUrl: '', videoUrl: '', visibility: 'public', authorshipConfirmed: false,
 };
+
+function ContributorNameInput({ value, placeholder, onNameChange, onSelectUser }) {
+  const [query, setQuery] = useState(value || '');
+  const [prevValue, setPrevValue] = useState(value);
+  const [results, setResults] = useState([]);
+  const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const containerRef = useRef(null);
+
+  if (value !== prevValue) {
+    setPrevValue(value);
+    setQuery(value || '');
+  }
+
+  useEffect(() => {
+    const trimmed = query.trim();
+    if (trimmed.length < 2) {
+      return undefined;
+    }
+
+    const timer = setTimeout(async () => {
+      setLoading(true);
+      try {
+        const res = await apiRequest(`/projects/users/search?q=${encodeURIComponent(trimmed)}`);
+        setResults(res?.users || []);
+      } catch {
+        setResults([]);
+      } finally {
+        setLoading(false);
+      }
+    }, 250);
+
+    return () => clearTimeout(timer);
+  }, [query]);
+
+  useEffect(() => {
+    const handleOutsideClick = (e) => {
+      if (containerRef.current && !containerRef.current.contains(e.target)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleOutsideClick);
+    return () => document.removeEventListener('mousedown', handleOutsideClick);
+  }, []);
+
+  const handleChange = (e) => {
+    const val = e.target.value;
+    setQuery(val);
+    onNameChange(val);
+    if (val.trim().length < 2) {
+      setResults([]);
+      setLoading(false);
+    }
+    setOpen(true);
+  };
+
+  const handleSelect = (user) => {
+    setQuery(user.name);
+    setOpen(false);
+    onSelectUser(user);
+  };
+
+  return (
+    <div className="pe-contrib-search" ref={containerRef}>
+      <input
+        value={query}
+        onChange={handleChange}
+        onFocus={() => {
+          if (query.trim().length >= 2) setOpen(true);
+        }}
+        placeholder={placeholder}
+        maxLength={80}
+        aria-label="Contributor name"
+        autoComplete="off"
+      />
+      {open && (results.length > 0 || loading) && (
+        <div className="pe-contrib-dropdown" role="listbox">
+          <div className="pe-contrib-dropdown-header">
+            <span>CodeSphere Registered Members</span>
+            {loading ? <i className="bi bi-arrow-repeat spin" /> : <small>{results.length} found</small>}
+          </div>
+          {results.length > 0 ? (
+            <div className="pe-contrib-list">
+              {results.map((u) => (
+                <button
+                  key={u.id || u.username}
+                  type="button"
+                  className="pe-contrib-item"
+                  onMouseDown={(e) => {
+                    // Prevent blur before click executes
+                    e.preventDefault();
+                    handleSelect(u);
+                  }}
+                >
+                    <ProfileAvatar
+                      user={u}
+                      src={u.avatarUrl}
+                      name={u.name}
+                      className="pe-contrib-avatar"
+                      aria-hidden="true"
+                    />
+                  <div className="pe-contrib-info">
+                    <span className="pe-contrib-row pe-contrib-fullname">{u.name}</span>
+                    <span className="pe-contrib-row pe-contrib-username">@{u.username}</span>
+                    <span className="pe-contrib-row pe-contrib-email">{u.email || 'No email provided'}</span>
+                  </div>
+                </button>
+              ))}
+            </div>
+          ) : (
+            <div className="pe-contrib-no-results">
+              <i className="bi bi-search" aria-hidden="true" />
+              <span>No registered members match &ldquo;{query}&rdquo;</span>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
 
 // Guess a CodeSphere domain from GitHub languages/topics.
 function guessCategory(repo) {
@@ -92,9 +213,27 @@ export default function ProjectEditor() {
     let cancelled = false;
     apiRequest('/github/status')
       .then((r) => { if (!cancelled) setGithubStatus(r); })
-      .catch(() => {});
+      .catch(() => { });
     return () => { cancelled = true; };
   }, []);
+
+  const [initialisedUser, setInitialisedUser] = useState(false);
+  if (!id && user?.name && !initialisedUser) {
+    setInitialisedUser(true);
+    if (!form.contributors.length) {
+      setForm((f) => ({
+        ...f,
+        teamType: f.teamType || 'individual',
+        contributors: [{
+          name: user.name,
+          role: 'Author',
+          profileLink: user.username ? `https://codesphere.com/user/${user.username}` : '',
+          username: user.username || '',
+          avatarUrl: user.profileImage?.url || '',
+        }],
+      }));
+    }
+  }
 
   // Editing: load the project.
   useEffect(() => {
@@ -112,14 +251,26 @@ export default function ProjectEditor() {
           features: (p.features || []).join('\n'),
           techStack: (p.techStack || []).join(', '),
           tags: (p.tags || []).join(', '),
-          contributors: p.contributors || [],
+          contributors: (p.contributors && p.contributors.length) ? p.contributors.map((c) => ({
+            name: c.name || '',
+            role: c.role || '',
+            profileLink: c.profileLink || (c.username ? `/user/${c.username}` : ''),
+            username: c.username || '',
+            avatarUrl: c.avatarUrl || '',
+          })) : [{
+            name: user?.name || '',
+            role: 'Author',
+            profileLink: user?.username ? `/user/${user.username}` : '',
+            username: user?.username || '',
+            avatarUrl: user?.profileImage?.url || '',
+          }],
         });
       })
       .catch((e) => !cancelled && setError(e.message));
     return () => {
       cancelled = true;
     };
-  }, [id]);
+  }, [id, user]);
 
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.type === 'checkbox' ? e.target.checked : e.target.value }));
   const setContributor = (i, k, v) => setForm((f) => ({ ...f, contributors: f.contributors.map((c, j) => (j === i ? { ...c, [k]: v } : c)) }));
@@ -139,7 +290,13 @@ export default function ProjectEditor() {
         tags: f.tags || repo.topics.join(', '),
         demoUrl: f.demoUrl || repo.homepage,
         category: f.category === EMPTY.category ? guessCategory(repo) : f.category,
-        contributors: f.contributors.length ? f.contributors : [{ name: user?.name || '', role: 'Author' }],
+        contributors: f.contributors.length ? f.contributors : [{
+          name: user?.name || '',
+          role: 'Author',
+          profileLink: user?.username ? `/user/${user.username}` : '',
+          username: user?.username || '',
+          avatarUrl: user?.profileImage?.url || '',
+        }],
       }));
     } catch (err) {
       showNotice({
@@ -428,16 +585,136 @@ export default function ProjectEditor() {
                 <section className="pe-card">
                   <h2>Team & credits</h2>
                   <div className="pe-grid">
-                    <Field label="Project type"><select value={form.teamType} onChange={set('teamType')}><option value="individual">Individual</option><option value="team">Team</option></select></Field>
+                    <Field label="Project type">
+                      <select
+                        value={form.teamType}
+                        onChange={(e) => {
+                          const newType = e.target.value;
+                          setForm((f) => ({
+                            ...f,
+                            teamType: newType,
+                            // Ensure author is present if contributors array was empty
+                            contributors: f.contributors.length ? f.contributors : [{
+                              name: user?.name || '',
+                              role: 'Author',
+                              profileLink: user?.username ? `/user/${user.username}` : '',
+                              username: user?.username || '',
+                              avatarUrl: user?.profileImage?.url || '',
+                            }],
+                          }));
+                        }}
+                      >
+                        <option value="individual">Individual</option>
+                        <option value="team">Team</option>
+                      </select>
+                    </Field>
                   </div>
-                  {form.contributors.map((c, i) => (
-                    <div key={i} className="pe-contrib">
-                      <input value={c.name} onChange={(e) => setContributor(i, 'name', e.target.value)} placeholder="Name" maxLength={80} aria-label="Contributor name" />
-                      <input value={c.role} onChange={(e) => setContributor(i, 'role', e.target.value)} placeholder="Role (Frontend, ML, Design…)" maxLength={80} aria-label="Role" />
-                      <button type="button" aria-label="Remove" onClick={() => setForm((f) => ({ ...f, contributors: f.contributors.filter((_, j) => j !== i) }))}><i className="bi bi-x-lg" /></button>
+
+                  {form.teamType === 'individual' ? (
+                    <div style={{ marginTop: '12px', padding: '14px', borderRadius: '12px', background: '#F8FAFC', border: '1px solid var(--p-line)' }}>
+                      <strong style={{ display: 'block', color: 'var(--navy)', fontSize: '0.92rem', marginBottom: '8px' }}>
+                        <i className="bi bi-person-check" aria-hidden="true" /> Author (You)
+                      </strong>
+                      <div className="pe-contrib" style={{ marginBottom: 0 }}>
+                        <input
+                          value={form.contributors[0]?.name ?? user?.name ?? ''}
+                          onChange={(e) => setContributor(0, 'name', e.target.value)}
+                          placeholder="Your Name"
+                          maxLength={80}
+                          aria-label="Author name"
+                        />
+                        <input
+                          value={form.contributors[0]?.role || 'Author / Creator'}
+                          onChange={(e) => setContributor(0, 'role', e.target.value)}
+                          placeholder="Role (e.g. Author, Creator)"
+                          maxLength={80}
+                          aria-label="Author role"
+                        />
+                        <input
+                          value={form.contributors[0]?.profileLink ?? (user?.username ? `/user/${user.username}` : '')}
+                          onChange={(e) => setContributor(0, 'profileLink', e.target.value)}
+                          placeholder="CodeSphere profile link or username (e.g. /user/username)"
+                          maxLength={300}
+                          aria-label="CodeSphere profile link"
+                        />
+                        <div style={{ display: 'grid', placeItems: 'center', color: '#16A34A', fontSize: '1.2rem' }} title="Author confirmed">
+                          <i className="bi bi-check-circle-fill" />
+                        </div>
+                      </div>
+                      <small style={{ display: 'block', marginTop: '6px', color: 'var(--p-muted)', fontSize: '0.78rem' }}>
+                        Your CodeSphere profile and photo will automatically display beside your name in the project showcase.
+                      </small>
                     </div>
-                  ))}
-                  <button type="button" className="ph-btn" onClick={() => setForm((f) => ({ ...f, contributors: [...f.contributors, { name: '', role: '' }] }))}><i className="bi bi-person-plus" aria-hidden="true" /> Add contributor</button>
+                  ) : (
+                    <div style={{ marginTop: '12px' }}>
+                      <strong style={{ display: 'block', color: 'var(--navy)', fontSize: '0.92rem', marginBottom: '8px' }}>
+                        <i className="bi bi-people" aria-hidden="true" /> Team Members & Contributors
+                      </strong>
+                      <p style={{ margin: '0 0 10px', color: 'var(--p-muted)', fontSize: '0.82rem' }}>
+                        Credit yourself and all teammates. Entering their CodeSphere profile link or username will display their photo and link to their public profile.
+                      </p>
+                      {form.contributors.map((c, i) => (
+                        <div
+                          key={i}
+                          className="pe-contrib"
+                          style={{ zIndex: form.contributors.length - i + 10 }}
+                        >
+                          <ContributorNameInput
+                            value={c.name}
+                            placeholder={i === 0 ? 'Your Name' : 'Member Name'}
+                            isLead={i === 0}
+                            onNameChange={(val) => setContributor(i, 'name', val)}
+                            onSelectUser={(u) => {
+                              setForm((f) => {
+                                const next = [...f.contributors];
+                                next[i] = {
+                                  ...next[i],
+                                  name: u.name,
+                                  username: u.username,
+                                  avatarUrl: u.avatarUrl || '',
+                                  profileLink: `/user/${u.username}`,
+                                  role: next[i].role || (i === 0 ? 'Lead' : 'Contributor'),
+                                };
+                                return { ...f, contributors: next };
+                              });
+                            }}
+                          />
+                          <input
+                            value={c.role}
+                            onChange={(e) => setContributor(i, 'role', e.target.value)}
+                            placeholder={i === 0 ? 'Your Role (Lead, Full Stack)' : 'Role (Frontend, ML, UI/UX)'}
+                            maxLength={80}
+                            aria-label="Role"
+                          />
+                          <input
+                            value={c.profileLink || ''}
+                            onChange={(e) => setContributor(i, 'profileLink', e.target.value)}
+                            placeholder="CodeSphere profile link or username"
+                            maxLength={300}
+                            aria-label="CodeSphere profile link"
+                          />
+                          <button
+                            type="button"
+                            aria-label="Remove"
+                            title="Remove contributor"
+                            onClick={() => setForm((f) => ({ ...f, contributors: f.contributors.filter((_, j) => j !== i) }))}
+                            disabled={form.contributors.length <= 1}
+                          >
+                            <i className="bi bi-x-lg" />
+                          </button>
+                        </div>
+                      ))}
+                      <button
+                        type="button"
+                        className="ph-btn"
+                        style={{ marginTop: '6px' }}
+                        onClick={() => setForm((f) => ({ ...f, contributors: [...f.contributors, { name: '', role: '', profileLink: '' }] }))}
+                      >
+                        <i className="bi bi-person-plus" aria-hidden="true" /> Add contributor
+                      </button>
+                    </div>
+                  )}
+
                   <label className="pe-confirm">
                     <input type="checkbox" checked={form.authorshipConfirmed} onChange={set('authorshipConfirmed')} />
                     <span>I built or contributed to this project, I have permission to showcase it, and everyone who worked on it is credited above.</span>

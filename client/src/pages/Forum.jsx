@@ -8,6 +8,7 @@ import { loadForumConfig } from '../lib/forum';
 import { timeAgo } from '../lib/time';
 import AvatarUpload from '../components/AvatarUpload';
 import ProfileAvatar from '../components/ProfileAvatar';
+import MemberLink from '../components/MemberLink';
 import '../css/Forum.css';
 import '../css/ForumSocial.css';
 
@@ -41,7 +42,9 @@ export function AuthorBadge({ author, size = 'sm' }) {
     <span className={`forum-author forum-author-${size}`}>
       <Avatar person={author} className="forum-avatar fx-avatar" />
       <span>
-        <strong>{author.name}</strong>
+        <strong>
+          <MemberLink user={author} style={{ position: 'relative', zIndex: 2 }}>{author.name}</MemberLink>
+        </strong>
         {author.isStaff
           ? <i className="bi bi-patch-check-fill fx-verified" title="CodeSphere team" aria-label="Team" />
           : author.year && <small>{author.year}</small>}
@@ -60,7 +63,9 @@ export function ThreadCard({ thread, config }) {
       <div className="fx-post-main">
         {thread.pinned && <p className="fx-pinned"><i className="bi bi-pin-angle-fill" aria-hidden="true" /> Pinned post</p>}
         <header className="fx-post-head">
-          <strong>{author.name}</strong>
+          <strong>
+            <MemberLink user={author} style={{ position: 'relative', zIndex: 2 }}>{author.name}</MemberLink>
+          </strong>
           {author.isStaff && <i className="bi bi-patch-check-fill fx-verified" title="CodeSphere team" aria-label="Team" />}
           <span className="fx-muted">
             {author.year && !author.isStaff ? `${author.year} · ` : ''}{timeAgo(thread.lastActivityAt)}

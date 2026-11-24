@@ -19,6 +19,7 @@ import AdminBadgeAwards from '../components/AdminBadgeAwards';
 import AdminStaffRoles from '../components/AdminStaffRoles';
 import MemberProfile from './MemberProfile';
 import BroadcastOptions from '../components/BroadcastOptions';
+import MemberLink from '../components/MemberLink';
 import PushEmailButton from '../components/PushEmailButton';
 import ProfileAvatar from '../components/ProfileAvatar';
 
@@ -2112,7 +2113,7 @@ export default function Admin() {
                           </div>
 
                           <div className="admin-member-details">
-                            <h3>{registeredUser.name}</h3>
+                            <h3><MemberLink user={registeredUser}>{registeredUser.name}</MemberLink></h3>
 
                             <p>{registeredUser.email}</p>
 
@@ -2138,8 +2139,15 @@ export default function Admin() {
                         <div className="admin-user-card-actions">
                           {registeredUser.role !== 'admin' && (
                             <>
-                              <AdminStaffRoles userId={registeredUser._id} initial={registeredUser.staffRoles || []} />
-                              <AdminBadgeAwards userId={registeredUser._id} userName={registeredUser.name} />
+                              <AdminStaffRoles
+                                userId={registeredUser._id}
+                                userName={registeredUser.name}
+                                initial={registeredUser.staffRoles || []}
+                              />
+                              <AdminBadgeAwards
+                                userId={registeredUser._id}
+                                userName={registeredUser.name}
+                              />
                             </>
                           )}
 
@@ -2672,7 +2680,7 @@ export default function Admin() {
                             />
 
                             <div className="admin-team-member-card-content">
-                              <h3>{member.name}</h3>
+                              <h3><MemberLink user={member}>{member.name}</MemberLink></h3>
 
                               <p className="team-member-role">
                                 {member.role}

@@ -1,16 +1,23 @@
 import { Link } from 'react-router-dom';
 import { STATUS, categoryOf } from '../lib/projects';
 import ProfileAvatar from './ProfileAvatar';
+import MemberLink from './MemberLink';
 import '../css/Projects.css';
+
+const DEFAULT_BANNER = '/default-profile-banner.webp';
 
 // Project card used in the Showcase, My Projects and guided pages.
 export default function ProjectCard({ p, showStatus = false }) {
   const cat = categoryOf(p.category);
   const st = STATUS[p.status];
+  const coverUrl = p.cover || DEFAULT_BANNER;
+
   return (
     <article className="ph-card">
-      <div className="ph-card-cover" style={p.cover ? { backgroundImage: `url("${encodeURI(p.cover)}")` } : undefined}>
-        {!p.cover && <i className={`bi ${cat.icon}`} aria-hidden="true" />}
+      <div
+        className={`ph-card-cover ${!p.cover ? 'has-fallback' : ''}`}
+        style={{ backgroundImage: `url("${encodeURI(coverUrl)}")` }}
+      >
         {p.featured && <span className="ph-featured"><i className="bi bi-star-fill" aria-hidden="true" /> Featured</span>}
         {showStatus && st && <span className={`ph-status tone-${st.tone}`}><i className={`bi ${st.icon}`} aria-hidden="true" /> {st.label}</span>}
       </div>
@@ -28,10 +35,13 @@ export default function ProjectCard({ p, showStatus = false }) {
           {p.owner && (
             <span className="ph-owner">
               <ProfileAvatar user={p.owner} name={p.owner.name} aria-hidden="true" />
-              {p.owner.name}{p.contributorsCount > 1 && ` +${p.contributorsCount - 1}`}
+              <MemberLink user={p.owner} style={{ position: 'relative', zIndex: 2 }}>
+                {p.owner.name}
+              </MemberLink>
+              {p.contributorsCount > 1 && ` +${p.contributorsCount - 1}`}
             </span>
           )}
-          <span className="ph-links">
+          <span className="ph-links" style={{ position: 'relative', zIndex: 2 }}>
             {p.githubUrl && <a href={p.githubUrl} target="_blank" rel="noopener noreferrer nofollow" aria-label="GitHub repository"><i className="bi bi-github" /></a>}
             {p.demoUrl && <a href={p.demoUrl} target="_blank" rel="noopener noreferrer nofollow" aria-label="Live demo"><i className="bi bi-box-arrow-up-right" /></a>}
           </span>

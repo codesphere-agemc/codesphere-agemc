@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { useNotice } from '../context/NoticeContext';
 import { apiRequest } from '../lib/api';
 import ProfileAvatar from './ProfileAvatar';
+import MemberLink from './MemberLink';
 
 const COLUMNS = [
   ['todo', 'To do', 'bi-circle'],
@@ -125,16 +126,16 @@ export default function ProjectTeam({ project, onChange }) {
         <section className="pd-block">
           <h2><i className="bi bi-people" aria-hidden="true" /> Team</h2>
           <ul className="pt-members">
-            {project.owner && <li><Avatar p={project.owner} /> <span><strong>{project.owner.name}</strong><small>Owner</small></span></li>}
+            {project.owner && <li><Avatar p={project.owner} /> <span><strong><MemberLink user={project.owner}>{project.owner.name}</MemberLink></strong><small>Owner</small></span></li>}
             {(project.team || []).map((m) => (
               <li key={m.id}>
-                <Avatar p={m} /> <span><strong>{m.name}</strong><small>{m.role}</small></span>
+                <Avatar p={m} /> <span><strong><MemberLink user={m}>{m.name}</MemberLink></strong><small>{m.role}</small></span>
                 {(project.canEdit || m.id === myId) && <button type="button" className="ph-linkbtn" onClick={() => remove(m)}>{m.id === myId ? 'Leave' : 'Remove'}</button>}
               </li>
             ))}
             {(project.invites || []).map((m) => (
               <li key={m.id} className="pending">
-                <Avatar p={m} /> <span><strong>{m.name}</strong><small>Invited · {m.role}</small></span>
+                <Avatar p={m} /> <span><strong><MemberLink user={m}>{m.name}</MemberLink></strong><small>Invited · {m.role}</small></span>
                 {project.canEdit && <button type="button" className="ph-linkbtn" onClick={() => remove(m)}>Cancel</button>}
               </li>
             ))}

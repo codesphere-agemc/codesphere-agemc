@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import ExcelImport from '../components/ExcelImport';
+import RichTextEditor from '../components/RichTextEditor';
 import { apiRequest } from '../lib/api';
 import {
   CATEGORIES, CATEGORY, SCHEME_TEMPLATES, STATUSES, VISIBILITY,
@@ -392,8 +393,24 @@ export default function ResultEditor() {
               </label>
               <label><span>Organised by</span><input value={form.organization} onChange={set('organization')} maxLength={100} /></label>
               <label><span>Held on</span><input type="date" value={form.heldOn} onChange={set('heldOn')} /></label>
-              <label className="wide"><span>Summary <small>(optional)</small></span><input value={form.summary} onChange={set('summary')} maxLength={300} placeholder="Final round judged by a panel of 4 industry mentors." /></label>
-              <label className="wide"><span>Notes for participants <small>(optional)</small></span><textarea rows={3} value={form.notes} onChange={set('notes')} maxLength={4000} placeholder="How judging worked, tie-breaks, next steps for selected candidates…" /></label>
+              <div className="wide res-rich-field">
+                <span className="res-field-label">Summary <small>(optional)</small></span>
+                <RichTextEditor
+                  value={form.summary}
+                  onChange={(content) => setForm((f) => ({ ...f, summary: content }))}
+                  height={240}
+                  placeholder="Final round judged by a panel of 4 industry mentors…"
+                />
+              </div>
+              <div className="wide res-rich-field">
+                <span className="res-field-label">Notes for participants <small>(optional)</small></span>
+                <RichTextEditor
+                  value={form.notes}
+                  onChange={(content) => setForm((f) => ({ ...f, notes: content }))}
+                  height={300}
+                  placeholder="How judging worked, tie-breaks, next steps for selected candidates…"
+                />
+              </div>
             </div>
           </section>
 
