@@ -102,8 +102,6 @@ function ReviewCard({ item, onDone, onOpenPreview }) {
     ['bi-camera-video', 'Meeting', item.meetingLink],
   ].filter(([, , url]) => url);
 
-  const isHtml = /<[a-z][\s\S]*>/i.test(item.description || '');
-
   return (
     <article className={`review-card-row status-${item.reviewStatus}`}>
       {/* 1. Left column: Banner */}
@@ -293,9 +291,10 @@ export default function AdminReview() {
 
   const pendingCount = data ? Object.values(data.counts || {}).reduce((a, b) => a + b, 0) : 0;
 
+  const items = data?.items;
   const filteredItems = useMemo(() => {
-    if (!data?.items) return [];
-    return data.items.filter((item) => {
+    if (!items) return [];
+    return items.filter((item) => {
       if (kindFilter !== 'all' && item.kind !== kindFilter) return false;
       if (!search.trim()) return true;
       const q = search.trim().toLowerCase();
@@ -304,7 +303,7 @@ export default function AdminReview() {
       const matchOrg = item.venue?.toLowerCase().includes(q) || item.category?.toLowerCase().includes(q);
       return matchTitle || matchHost || matchOrg;
     });
-  }, [data?.items, kindFilter, search]);
+  }, [items, kindFilter, search]);
 
   return (
     <>

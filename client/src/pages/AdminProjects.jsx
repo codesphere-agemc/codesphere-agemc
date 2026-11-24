@@ -399,9 +399,10 @@ export default function AdminProjects() {
     };
   }, [tab, version]);
 
+  const items = data?.items;
   const filteredItems = useMemo(() => {
-    if (!data?.items) return [];
-    return data.items.filter((p) => {
+    if (!items) return [];
+    return items.filter((p) => {
       if (categoryFilter !== 'all' && p.category !== categoryFilter) return false;
       if (!search.trim()) return true;
       const q = search.trim().toLowerCase();
@@ -410,7 +411,7 @@ export default function AdminProjects() {
       const matchTech = p.techStack?.some((t) => t.toLowerCase().includes(q));
       return matchTitle || matchOwner || matchTech;
     });
-  }, [data?.items, categoryFilter, search]);
+  }, [items, categoryFilter, search]);
 
   const pendingCount = data?.counts?.pending_review || 0;
 
