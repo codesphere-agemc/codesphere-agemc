@@ -43,7 +43,7 @@ async function uniqueSlug(title) {
   return slug;
 }
 
-const person = (u) => (u ? { id: String(u._id), name: u.name, initials: initials(u.name), avatarUrl: u.profileImage?.url || '' } : null);
+const person = (u) => (u ? { id: String(u._id), name: u.name, username: u.username || '', initials: initials(u.name), avatarUrl: u.profileImage?.url || '' } : null);
 
 function card(p) {
   return {
@@ -81,7 +81,19 @@ function detail(p, viewer) {
     outcomes: p.outcomes,
     limitations: p.limitations,
     projectStatus: p.projectStatus,
-    contributors: p.contributors.map((c) => ({ name: c.name, role: c.role })),
+    contributors: (p.contributors || []).map((c) => ({
+      name: c.name,
+      role: c.role,
+      profileLink: c.profileLink || '',
+      username: c.username || c.user?.username || '',
+      avatarUrl: c.avatarUrl || c.user?.profileImage?.url || '',
+      user: c.user ? {
+        id: String(c.user._id || c.user),
+        name: c.user.name || c.name,
+        username: c.user.username || c.username || '',
+        avatarUrl: c.user.profileImage?.url || c.avatarUrl || '',
+      } : null,
+    })),
     tags: p.tags,
     videoUrl: p.videoUrl,
     screenshots: (p.screenshots || []).map((s) => ({ id: String(s._id), url: s.url, caption: s.caption })),
@@ -110,8 +122,55 @@ function detail(p, viewer) {
   };
 }
 
+// Extract username from CodeSphere profile link or username string
+function parseCodeSphereUsername(str) {
+  if (!str) return '';
+  const s = String(str).trim();
+  const match = s.match(/(?:\/user\/|\/users\/profile\/|^@?)([a-z0-9_-]+)/i);
+  return match ? match[1].toLowerCase() : s.toLowerCase().replace(/[^a-z0-9_-]/g, '');
+}
+
+async function resolveContributors(rawContributors) {
+  const list = Array.isArray(rawContributors) ? rawContributors : [];
+  const results = [];
+  for (const c of list) {
+    const name = clean(c?.name, 80);
+    if (!name) continue;
+    const role = clean(c?.role, 80);
+    const profileLink = clean(c?.profileLink, 300);
+    const parsedUsername = parseCodeSphereUsername(profileLink || c?.username);
+
+    let user = null;
+    let avatarUrl = '';
+    let finalUsername = parsedUsername;
+
+    if (parsedUsername) {
+      const found = await User.findOne({
+        $or: [{ username: parsedUsername }, ...(mongoose.Types.ObjectId.isValid(parsedUsername) ? [{ _id: parsedUsername }] : [])],
+        role: 'user',
+      }).select('name username profileImage').lean();
+      if (found) {
+        user = found._id;
+        finalUsername = found.username || finalUsername;
+        avatarUrl = found.profileImage?.url || '';
+      }
+    }
+
+    results.push({
+      name,
+      role,
+      profileLink,
+      username: finalUsername,
+      avatarUrl,
+      user: user || undefined,
+    });
+  }
+  return results.slice(0, 12);
+}
+
 // Fields a student writes (never overwritten by GitHub refreshes).
-function readForm(b) {
+async function readForm(b) {
+  const resolvedContributors = await resolveContributors(b.contributors);
   const data = {
     title: clean(b.title, 100),
     summary: clean(b.summary, 280),
@@ -125,8 +184,7 @@ function readForm(b) {
     level: PROJECT_LEVELS.includes(b.level) ? b.level : 'Beginner',
     projectStatus: ['prototype', 'in-progress', 'completed', 'archived'].includes(b.projectStatus) ? b.projectStatus : 'completed',
     teamType: b.teamType === 'team' ? 'team' : 'individual',
-    contributors: (Array.isArray(b.contributors) ? b.contributors : [])
-      .map((c) => ({ name: clean(c?.name, 80), role: clean(c?.role, 80) })).filter((c) => c.name).slice(0, 12),
+    contributors: resolvedContributors,
     techStack: list(b.techStack, 15, 40),
     tags: list(b.tags, 10, 30).map((t) => t.toLowerCase()),
     demoUrl: safeUrl(b.demoUrl),
@@ -229,7 +287,7 @@ router.post('/github/preview', protect, previewLimiter, async (req, res) => {
 router.get('/admin/queue', protect, async (req, res) => {
   if (!isReviewer(req.user)) return res.status(403).json({ message: 'Not allowed.' });
   const status = ['pending_review', 'published', 'changes_requested', 'rejected', 'archived'].includes(req.query.status) ? req.query.status : 'pending_review';
-  const items = await Project.find({ status }).populate('owner', 'name email profileImage').populate('guided', 'slug title')
+  const items = await Project.find({ status }).populate('owner', 'name username email profileImage').populate('guided', 'slug title')
     .sort(status === 'pending_review' ? { submittedAt: 1 } : { updatedAt: -1 }).limit(100);
   const counts = { pending_review: await Project.countDocuments({ status: 'pending_review' }) };
   res.json({
@@ -345,7 +403,7 @@ router.get('/guided/:slug', optionalAuth, async (req, res) => {
   const g = await GuidedProject.findOne({ slug: String(req.params.slug), status: 'published' }).lean();
   if (!g) return res.status(404).json({ message: 'Guided project not found.' });
   const progress = req.user ? await GuidedProgress.findOne({ user: req.user._id, guided: g._id }).lean() : null;
-  const showcase = await Project.find({ guided: g._id, status: 'published', visibility: 'public' }).populate('owner', 'name profileImage').sort({ publishedAt: -1 }).limit(6);
+  const showcase = await Project.find({ guided: g._id, status: 'published', visibility: 'public' }).populate('owner', 'name username profileImage').sort({ publishedAt: -1 }).limit(6);
   res.json({
     guided: { ...guidedCard(g, progress), prerequisites: g.prerequisites, outcomes: g.outcomes, problem: g.problem, milestones: g.milestones, starterRepo: g.starterRepo, submissionCriteria: g.submissionCriteria },
     progress: progress ? { done: progress.done, repoUrl: progress.repoUrl, demoUrl: progress.demoUrl, completedAt: progress.completedAt, project: progress.project ? String(progress.project) : null } : null,
@@ -437,7 +495,7 @@ router.post('/guided/:slug/submit', protect, writeLimiter, async (req, res) => {
 
 router.get('/mine', protect, async (req, res) => {
   const [projects, progress] = await Promise.all([
-    Project.find({ owner: req.user._id }).populate('owner', 'name profileImage').sort({ updatedAt: -1 }),
+    Project.find({ owner: req.user._id }).populate('owner', 'name username profileImage').sort({ updatedAt: -1 }),
     GuidedProgress.find({ user: req.user._id }).populate('guided').sort({ updatedAt: -1 }),
   ]);
   res.json({
@@ -463,7 +521,7 @@ router.get('/', async (req, res) => {
   const limit = 18;
   const sort = q ? { score: { $meta: 'textScore' } } : req.query.sort === 'popular' ? { views: -1, publishedAt: -1 } : { featured: -1, publishedAt: -1 };
   const [items, total] = await Promise.all([
-    Project.find(filter).populate('owner', 'name profileImage').sort(sort).skip((page - 1) * limit).limit(limit),
+    Project.find(filter).populate('owner', 'name username profileImage').sort(sort).skip((page - 1) * limit).limit(limit),
     Project.countDocuments(filter),
   ]);
   res.json({ items: items.map(card), total, page, pages: Math.max(1, Math.ceil(total / limit)) });
@@ -476,7 +534,7 @@ router.get('/', async (req, res) => {
 // POST /api/projects { githubUrl?, ...form }: always a draft
 router.post('/', protect, writeLimiter, async (req, res) => {
   try {
-    const { data, errors } = readForm(req.body || {});
+    const { data, errors } = await readForm(req.body || {});
     if (errors.length) return res.status(400).json({ message: errors[0] });
     let snapshot = null;
     if (req.body.githubUrl) {
@@ -521,7 +579,7 @@ router.put('/:id', protect, writeLimiter, async (req, res) => {
   const project = await loadOwned(req, res);
   if (!project) return;
   if (['rejected'].includes(project.status)) return res.status(400).json({ message: 'This project was not accepted. Create a new one if you have improved it.' });
-  const { data, errors } = readForm(req.body || {});
+  const { data, errors } = await readForm(req.body || {});
   if (errors.length) return res.status(400).json({ message: errors[0] });
   Object.assign(project, data);
   if (project.status === 'published' || project.status === 'pending_review') {
@@ -706,8 +764,12 @@ router.delete('/:id/updates/:updateId', protect, async (req, res) => {
 // ---------- Project page (public when published) ----------
 
 router.get('/:slug', optionalAuth, async (req, res) => {
-  const project = await Project.findOne({ slug: String(req.params.slug) }).populate('owner', 'name profileImage').populate('guided', 'slug title')
-    .populate('members.user', 'name profileImage').populate('tasks.assignee', 'name profileImage');
+  const project = await Project.findOne({ slug: String(req.params.slug) })
+    .populate('owner', 'name username profileImage')
+    .populate('contributors.user', 'name username profileImage')
+    .populate('guided', 'slug title')
+    .populate('members.user', 'name username profileImage')
+    .populate('tasks.assignee', 'name username profileImage');
   const allowed = project && (project.status === 'published' || canWork(project, req.user) || memberOf(project, req.user) || isReviewer(req.user));
   if (!allowed) return res.status(404).json({ message: 'Project not found.' });
   if (project.status === 'published' && !isOwner(project, req.user)) {

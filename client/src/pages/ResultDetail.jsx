@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
+import DOMPurify from 'dompurify';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import ShareButton from '../components/ShareButton';
@@ -89,7 +90,15 @@ export default function ResultDetail() {
                 <span className={`res-cat on-dark cat-${r.category}`}><i className={`bi ${cat.icon}`} aria-hidden="true" /> {cat.label}</span>
                 {r.status !== 'published' && <span className="res-status tone-warn">Draft: only organisers can see this</span>}
                 <h1>{r.title}</h1>
-                <p className="res-lead">{r.organization}{r.heldOn && <> · {formatDay(r.heldOn)}</>}{r.summary && <> · {r.summary}</>}</p>
+                <div className="res-lead">
+                  <span>{r.organization}{r.heldOn && <> · {formatDay(r.heldOn)}</>}</span>
+                  {r.summary && (
+                    <div
+                      className="res-lead-summary res-rich-content"
+                      dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(r.summary) }}
+                    />
+                  )}
+                </div>
               </div>
               <div className="res-actions">
                 {r.source?.kind === 'hackathon' && <Link to={`/hackathons/${r.source.slug}`} className="res-btn res-btn-ghost"><i className="bi bi-trophy" aria-hidden="true" /> Hackathon page</Link>}
@@ -176,7 +185,10 @@ export default function ResultDetail() {
               {r.notes && (
                 <div className="res-notes">
                   <h3>Notes from the organisers</h3>
-                  <p>{r.notes}</p>
+                  <div
+                    className="res-notes-body res-rich-content"
+                    dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(r.notes) }}
+                  />
                 </div>
               )}
             </aside>

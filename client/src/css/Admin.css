@@ -977,7 +977,7 @@
   font-weight: 750;
 }
 
-.admin-form-field input:not([type="file"]),
+.admin-form-field input:not([type="file"]):not([type="checkbox"]):not([type="radio"]),
 .admin-form-field textarea,
 .admin-form-field select {
   width: 100%;
@@ -1004,7 +1004,7 @@
   line-height: 1.6;
 }
 
-.admin-form-field input:focus,
+.admin-form-field input:not([type="checkbox"]):not([type="radio"]):focus,
 .admin-form-field textarea:focus,
 .admin-form-field select:focus,
 .admin-form-select:focus {
@@ -2195,20 +2195,10 @@
   margin-top: 0;
 }
 
-.admin-user-card-actions .adm-staff.is-open {
-  flex-basis: 100%;
-}
-
 .admin-user-card-actions .adm-staff-toggle {
   min-height: 36px;
   box-sizing: border-box;
   white-space: nowrap;
-}
-
-.admin-user-card-actions .adm-staff-panel {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
 }
 
 .admin-user-card-actions .adm-badges {
@@ -2375,10 +2365,6 @@
 
   .admin-user-card-actions .adm-staff {
     flex-basis: auto;
-  }
-
-  .admin-user-card-actions .adm-staff.is-open {
-    flex-basis: 100%;
   }
 }
 

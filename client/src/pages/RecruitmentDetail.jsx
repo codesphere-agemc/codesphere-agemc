@@ -9,6 +9,7 @@ import PushEmailButton from '../components/PushEmailButton';
 import { useAuth } from '../context/AuthContext';
 import { apiRequest } from '../lib/api';
 import { daysLeft, formatDateTime, formatDay, STATUS_LABEL, TYPE_LABEL } from '../lib/recruitments';
+import MemberLink from '../components/MemberLink';
 import '../css/Recruitments.css';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
@@ -78,7 +79,7 @@ function Applicants({ r }) {
           <div className="rec-applicant-who">
             <span className="rec-avatar">{a.user.avatar ? <img src={a.user.avatar} alt="" /> : a.user.name.charAt(0)}</span>
             <div>
-              <strong>{a.user.username ? <Link to={`/user/${a.user.username}`}>{a.user.name}</Link> : a.user.name}</strong>
+              <strong><MemberLink user={a.user}>{a.user.name}</MemberLink></strong>
               <small>{[a.role, a.user.year, a.user.department, a.user.college].filter(Boolean).join(' · ')}</small>
               <small>
                 <a href={`mailto:${a.user.email}`}>{a.user.email}</a>

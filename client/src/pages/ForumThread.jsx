@@ -4,6 +4,7 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import SafeText from '../components/SafeText';
 import { AuthorBadge } from './Forum';
+import MemberLink from '../components/MemberLink';
 import { apiRequest } from '../lib/api';
 import { loadForumConfig, REACTIONS } from '../lib/forum';
 import { celebrateBadges } from '../lib/badges';
@@ -143,7 +144,7 @@ function ReplyComposer({ threadId, parentReply, onPosted, onCancel, autoFocus, l
     <form className="forum-composer" onSubmit={send}>
       {parentReply && (
         <p className="forum-replying-to">
-          Replying to <strong>{parentReply.author.name}</strong>
+          Replying to <strong><MemberLink user={parentReply.author}>{parentReply.author.name}</MemberLink></strong>
           <button type="button" onClick={onCancel} aria-label="Cancel reply"><i className="bi bi-x" aria-hidden="true" /></button>
         </p>
       )}
