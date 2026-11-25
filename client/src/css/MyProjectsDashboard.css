@@ -195,31 +195,26 @@
 /* Grid & Cards */
 .my-projects-grid {
   display: grid;
-<<<<<<< HEAD
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 16px;
 }
 
-@media (max-width: 1380px) {
+@media (max-width: 1280px) {
   .my-projects-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 
-@media (max-width: 990px) {
+@media (max-width: 900px) {
   .my-projects-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
-@media (max-width: 600px) {
+@media (max-width: 580px) {
   .my-projects-grid {
     grid-template-columns: 1fr;
   }
-=======
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 20px;
->>>>>>> 04e4f114ce80e9ced337a2d3c93ce0e1ecc2004c
 }
 
 .my-project-card-wrapper {
