@@ -195,6 +195,7 @@
 /* Grid & Cards */
 .my-projects-grid {
   display: grid;
+<<<<<<< HEAD
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 16px;
 }
@@ -215,6 +216,10 @@
   .my-projects-grid {
     grid-template-columns: 1fr;
   }
+=======
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+>>>>>>> 04e4f114ce80e9ced337a2d3c93ce0e1ecc2004c
 }
 
 .my-project-card-wrapper {
