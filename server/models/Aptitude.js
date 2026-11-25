@@ -52,6 +52,9 @@ const attemptSchema = new Schema(
   { timestamps: true },
 );
 attemptSchema.index({ user: 1, question: 1 });
+// XP for a question can be recorded only once per student (no farming, even
+// with double-clicks): at most one attempt with xp > 0 per user + question.
+attemptSchema.index({ user: 1, question: 1, mode: 1 }, { unique: true, partialFilterExpression: { xp: { $gt: 0 } }, name: 'one_xp_award_per_question' });
 attemptSchema.index({ user: 1, createdAt: -1 });
 
 // ---------- Per-student state ----------
@@ -66,6 +69,8 @@ const progressSchema = new Schema(
       at: { type: Date, default: Date.now },
       understood: { type: Boolean, default: false },
     }],
+    // Solutions opened before answering: those questions earn no XP.
+    revealed: [{ type: ObjectId, ref: 'AptitudeQuestion' }],
     streak: { type: Number, default: 0 },
     bestStreak: { type: Number, default: 0 },
     lastActiveDay: { type: String, default: null },

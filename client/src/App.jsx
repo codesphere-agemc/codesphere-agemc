@@ -48,6 +48,7 @@ import AdminNews from './pages/AdminNews';
 import Materials from './pages/Materials';
 import Aptitude from './pages/Aptitude';
 import AptitudeTopic from './pages/AptitudeTopic';
+import AptitudePractice from './pages/AptitudePractice';
 import AdminMaterials from './pages/AdminMaterials';
 import Hackathons from './pages/Hackathons';
 import HackathonDetail from './pages/HackathonDetail';
@@ -206,6 +207,7 @@ function AppRoutes() {
       {/* Aptitude: browsing is open; practice, tests and progress need sign-in. */}
       <Route path="/aptitude" element={<Aptitude />} />
       <Route path="/aptitude/topics/:slug" element={<AptitudeTopic />} />
+      <Route path="/aptitude/practice" element={<AptitudePractice />} />
       <Route path="/materials" element={<ProtectedRoute anyRole><Materials /></ProtectedRoute>} />
       <Route path="/materials/:slug" element={<ProtectedRoute anyRole><Materials /></ProtectedRoute>} />
       <Route path="/admin/materials" element={<ProtectedRoute staff="challenge-editor"><AdminToolLayout><AdminMaterials /></AdminToolLayout></ProtectedRoute>} />

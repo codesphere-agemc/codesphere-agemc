@@ -9,7 +9,7 @@ import '../css/Aptitude.css';
 
 // Quick-access cards. Sections still being built are marked and not clickable.
 const QUICK = [
-  { title: 'Practice Questions', text: 'Pick a topic and difficulty, answer, see the solution.', icon: 'bi-ui-checks-grid', to: null },
+  { title: 'Practice Questions', text: 'Pick a topic and difficulty, answer, see the solution.', icon: 'bi-ui-checks-grid', to: '/aptitude/practice' },
   { title: 'Mock Tests', text: 'Timed tests with negative marking, like the real thing.', icon: 'bi-stopwatch', to: null },
   { title: 'Placement Preparation', text: 'TCS NQT, Infosys, Wipro, Accenture and more.', icon: 'bi-briefcase', to: '#placement' },
   { title: 'Topic-wise Learning', text: '65 topics across 4 categories.', icon: 'bi-grid-3x3-gap', to: '#categories' },
@@ -38,7 +38,8 @@ function QuickCard({ card }) {
     </>
   );
   if (!card.to) return <div className="apt-quick is-soon" aria-disabled="true">{body}</div>;
-  return <a href={card.to} className="apt-quick">{body}</a>;
+  if (card.to.startsWith('#')) return <a href={card.to} className="apt-quick">{body}</a>;
+  return <Link to={card.to} className="apt-quick">{body}</Link>;
 }
 
 export default function Aptitude() {

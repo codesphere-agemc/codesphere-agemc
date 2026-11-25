@@ -57,10 +57,19 @@ export default function AptitudeTopic() {
                   </div>
                 ))}
               </div>
-              <div className="apt-callout">
-                <i className="bi bi-info-circle" aria-hidden="true" />
-                <span>Practising questions by topic and difficulty is coming in the next update. Each question will come with a hint, a step-by-step solution and a shortcut.</span>
-              </div>
+              {t.questions > 0 ? (
+                <div className="apt-topic-cta">
+                  <Link to={`/aptitude/practice?topic=${t.slug}`} className="apt-btn apt-btn-primary"><i className="bi bi-play-fill" aria-hidden="true" /> Practise {t.name}</Link>
+                  {Object.entries(DIFFICULTY).filter(([key]) => t.byDifficulty[key]).map(([key, d]) => (
+                    <Link key={key} to={`/aptitude/practice?topic=${t.slug}&difficulty=${key}`} className="apt-btn">{d.label} only</Link>
+                  ))}
+                </div>
+              ) : (
+                <div className="apt-callout">
+                  <i className="bi bi-info-circle" aria-hidden="true" />
+                  <span>Questions for this topic are being written. Each comes with a hint, a step-by-step solution and a shortcut.</span>
+                </div>
+              )}
             </section>
 
             <aside className="apt-section apt-siblings">
