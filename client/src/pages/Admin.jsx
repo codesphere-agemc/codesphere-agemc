@@ -1957,7 +1957,7 @@ export default function Admin() {
 
                       {(form.status === 'published' || !editingId) && (
                         <div className="admin-form-field admin-field-full">
-                          <BroadcastOptions value={eventBroadcastOptions} onChange={setEventBroadcastOptions} />
+                          <BroadcastOptions value={eventBroadcastOptions} onChange={setEventBroadcastOptions} allowEmail={true} />
                         </div>
                       )}
                       <div className="admin-form-actions admin-field-full">

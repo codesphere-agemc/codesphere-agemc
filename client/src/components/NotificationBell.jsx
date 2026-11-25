@@ -348,7 +348,7 @@ export default function NotificationBell({ compact = false }) {
                   {MUTE_LABELS[type] || type}
                 </label>
               ))}
-              <small>These settings only control in-app notifications. Manage email preferences from your profile.</small>
+              <small>These settings control your in-app notifications.</small>
               <small>Moderation and account messages are always shown.</small>
             </div>
           )}

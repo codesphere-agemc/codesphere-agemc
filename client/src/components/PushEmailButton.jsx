@@ -28,7 +28,7 @@ export default function PushEmailButton({ kind, id, title, className = '', label
     };
   }, [open, busy]);
 
-  if (user?.role !== 'admin') return null;
+  if (user?.role !== 'admin' || kind !== 'event') return null;
 
   const send = async (e) => {
     e.preventDefault();
