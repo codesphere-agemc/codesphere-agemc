@@ -156,6 +156,11 @@ router.post('/:kind/:id', protect, adminOnly, async (req, res) => {
     ? `<div style="margin:0 0 18px;padding:12px 16px;border-radius:12px;background:#eef5fb;color:#153653;font-size:15px;line-height:1.6">${escapeHtml(message).replace(/\n/g, '<br>')}</div>`
     : '';
 
+  const isEvent = req.params.kind === 'event';
+  if (!isEvent) {
+    return res.status(400).json({ message: 'Email broadcasting is restricted to events only.' });
+  }
+
   lastPush.set(key, Date.now());
   const result = await broadcastUpdate({
     title: subject,

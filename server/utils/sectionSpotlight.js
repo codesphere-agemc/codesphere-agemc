@@ -179,10 +179,8 @@ async function tick() {
 }
 
 function startSectionSpotlight() {
-  if (process.env.SECTION_SPOTLIGHT === 'off') return;
-  const run = () => tick().catch((error) => console.error('Section spotlight error:', error.message));
-  setTimeout(run, 45000).unref();
-  setInterval(run, 15 * 60 * 1000).unref();
+  // Periodic section spotlight emails are stopped.
+  return;
 }
 
 module.exports = { startSectionSpotlight, sendSpotlight, THEMES, itemsHtml };

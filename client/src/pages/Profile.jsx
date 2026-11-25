@@ -7,7 +7,6 @@ import { apiRequest } from '../lib/api';
 import Navbar from '../components/Navbar';
 import DashboardProfileSidebar from '../components/DashboardProfileSidebar';
 import BadgeLeaderboard from '../components/BadgeLeaderboard';
-import EmailPreferences from '../components/EmailPreferences';
 import ProjectCard from '../components/ProjectCard';
 import MyProjectsSection from '../components/MyProjectsSection';
 import '../css/Profile.css';
@@ -2202,12 +2201,6 @@ export default function Profile({
 
                   {!preview && currentUser?.role !== 'admin' && (
                     <div className="profile-settings-grid">
-                      <EmailPreferences
-                        email={currentUser?.email || ''}
-                        open={openSection === 'email'}
-                        onToggle={() => toggleSection('email')}
-                      />
-
                       <section className={`profile-section-card profile-password-card ${openSection === 'password' ? 'is-expanded' : ''}`}>
                         <button
                           type="button"

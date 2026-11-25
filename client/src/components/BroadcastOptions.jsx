@@ -1,6 +1,6 @@
 import '../css/Updates.css';
 
-export default function BroadcastOptions({ value, onChange, allowEmail = true }) {
+export default function BroadcastOptions({ value, onChange, allowEmail = false }) {
   const set = (key) => (event) => onChange({ ...value, [key]: event.target.checked });
 
   return (

@@ -93,10 +93,6 @@ export default function DashboardProfileSidebar({
           </div>
 
           <p>A complete profile helps the community discover your work.</p>
-
-          <Link to="/user/profile" className="profile-complete-action-button">
-            <span>Complete profile</span> <i className="bi bi-arrow-right" />
-          </Link>
         </section>
       )}
 
