@@ -195,7 +195,7 @@ const userSchema = new mongoose.Schema(
     // moderator (forum), news-editor (Tech News), challenge-editor (Reverse Coding).
     staffRoles: {
       type: [String],
-      enum: ['moderator', 'news-editor', 'challenge-editor', 'hackathon-organizer', 'project-reviewer'],
+      enum: ['moderator', 'news-editor', 'challenge-editor', 'hackathon-organizer', 'project-reviewer', 'aptitude-editor'],
       default: [],
     },
     // GitHub OAuth identity for Project Hub verification; separate from the profile URL.

@@ -46,6 +46,8 @@ import AdminReverse from './pages/AdminReverse';
 import News from './pages/News';
 import AdminNews from './pages/AdminNews';
 import Materials from './pages/Materials';
+import Aptitude from './pages/Aptitude';
+import AptitudeTopic from './pages/AptitudeTopic';
 import AdminMaterials from './pages/AdminMaterials';
 import Hackathons from './pages/Hackathons';
 import HackathonDetail from './pages/HackathonDetail';
@@ -201,6 +203,9 @@ function AppRoutes() {
       <Route path="/reverse-coding/:slug" element={<ProtectedRoute anyRole><ReverseChallenge /></ProtectedRoute>} />
       <Route path="/admin/reverse-coding" element={<ProtectedRoute staff="challenge-editor"><AdminToolLayout><AdminReverse /></AdminToolLayout></ProtectedRoute>} />
       
+      {/* Aptitude: browsing is open; practice, tests and progress need sign-in. */}
+      <Route path="/aptitude" element={<Aptitude />} />
+      <Route path="/aptitude/topics/:slug" element={<AptitudeTopic />} />
       <Route path="/materials" element={<ProtectedRoute anyRole><Materials /></ProtectedRoute>} />
       <Route path="/materials/:slug" element={<ProtectedRoute anyRole><Materials /></ProtectedRoute>} />
       <Route path="/admin/materials" element={<ProtectedRoute staff="challenge-editor"><AdminToolLayout><AdminMaterials /></AdminToolLayout></ProtectedRoute>} />

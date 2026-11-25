@@ -51,7 +51,7 @@ async function optionalAuth(req, res, next) {
   return next();
 }
 
-const STAFF_ROLES = ['moderator', 'news-editor', 'challenge-editor', 'hackathon-organizer', 'project-reviewer'];
+const STAFF_ROLES = ['moderator', 'news-editor', 'challenge-editor', 'hackathon-organizer', 'project-reviewer', 'aptitude-editor'];
 
 // True for admins, or for users holding the given staff role.
 function hasStaffRole(user, role) {

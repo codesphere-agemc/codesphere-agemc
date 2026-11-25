@@ -16,6 +16,7 @@ const navItems = [
       { label: 'Coding Playground', path: '/playground', icon: 'bi-terminal', description: 'Code in 70+ languages in your browser' },
       { label: 'Reverse Coding', path: '/reverse-coding', icon: 'bi-arrow-repeat', description: 'See the output, rebuild the code' },
       { label: 'Materials', path: '/materials', icon: 'bi-journal-bookmark', description: 'Study guides and resources' },
+      { label: 'Aptitude', path: '/aptitude', icon: 'bi-calculator', description: 'Placement aptitude: practice, mock tests, progress' },
     ],
   },
   {
