@@ -9,8 +9,15 @@ const imagekit = require("./config/imagekit");
 
 console.log("ImageKit client initialized:", !!imagekit);
 
+const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
 app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:5173',
+  origin: (origin, callback) => {
+    if (!origin || origin === clientUrl || /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) {
+      return callback(null, true);
+    }
+    return callback(new Error('Not allowed by CORS'));
+  },
+  credentials: true,
 }));
 app.use(express.json());
 
@@ -47,6 +54,9 @@ const projectRoutes = require('./routes/projectRoutes');
 const projectTeamRoutes = require('./routes/projectTeamRoutes');
 const githubRoutes = require('./routes/githubRoutes');
 const statsRoutes = require('./routes/statsRoutes');
+const recruitmentRoutes = require('./routes/recruitmentRoutes');
+const resultRoutes = require('./routes/resultRoutes');
+const pushRoutes = require('./routes/pushRoutes');
 const shareRoutes = require('./routes/shareRoutes');
 const { startProjectSync } = require('./utils/projectSync');
 const { startHackathonSync } = require('./utils/hackathonSync');
@@ -80,6 +90,9 @@ app.use('/api/projects', projectTeamRoutes); // before projectRoutes (it has a /
 app.use('/api/projects', projectRoutes);
 app.use('/api/github', githubRoutes);
 app.use('/api/stats', statsRoutes);
+app.use('/api/recruitments', recruitmentRoutes);
+app.use('/api/results', resultRoutes);
+app.use('/api/push', pushRoutes); // admin: email any item to everyone
 app.use('/api/share', shareRoutes);
 
 const PORT = process.env.PORT || 5000;

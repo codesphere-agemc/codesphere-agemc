@@ -139,11 +139,6 @@ const userSchema = new mongoose.Schema(
       default: '',
     },
 
-    technicalInterests: {
-      type: [String],
-      default: [],
-    },
-
     skillDetails: {
       type: [{
         name: { type: String, trim: true, required: true },
@@ -173,11 +168,6 @@ const userSchema = new mongoose.Schema(
         link: { type: String, trim: true, default: '' },
         order: { type: Number, min: 0 },
       }],
-      default: [],
-    },
-
-    learningGoals: {
-      type: [String],
       default: [],
     },
 

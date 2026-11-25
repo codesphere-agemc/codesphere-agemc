@@ -25,6 +25,8 @@ const notificationSchema = new mongoose.Schema(
         'hackathon',
         'host-review',
         'project',
+        'recruitment',
+        'result',
         'system',
       ],
     },

@@ -667,6 +667,334 @@
 }
 
 /* --------------------------------------------------
+   Admin Modals: Staff Roles & Badges Management
+-------------------------------------------------- */
+
+.adm-count-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--admin-primary, #F05A36);
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.adm-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 2500;
+  display: grid;
+  place-items: center;
+  padding: 20px 16px;
+  background: rgba(11, 25, 44, 0.65);
+  backdrop-filter: blur(5px);
+  animation: bdg-fade 0.2s ease;
+  overflow-y: auto;
+}
+
+.adm-modal-card {
+  position: relative;
+  width: 100%;
+  max-width: 540px;
+  max-height: 88vh;
+  margin: auto;
+  border-radius: 18px;
+  background: #ffffff;
+  box-shadow: 0 24px 60px rgba(11, 25, 44, 0.28), 0 8px 24px rgba(11, 25, 44, 0.12);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: bdg-pop 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.adm-modal-badges {
+  max-width: 620px;
+}
+
+.adm-modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid #E2E8F0;
+  background: #FAFCFE;
+}
+
+.adm-modal-header-text h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  color: var(--navy, #0B192C);
+  font-size: 1.25rem;
+  font-weight: 800;
+}
+
+.adm-modal-header-text h3 i {
+  color: var(--admin-primary, #F05A36);
+}
+
+.adm-modal-subtitle {
+  margin: 4px 0 0;
+  color: #64748B;
+  font-size: 0.86rem;
+}
+
+.adm-modal-subtitle strong {
+  color: var(--navy, #0B192C);
+}
+
+.adm-modal-close {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid #E2E8F0;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #64748B;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.adm-modal-close:hover {
+  background: #F1F5F9;
+  color: var(--navy, #0B192C);
+  border-color: #CBD5E1;
+}
+
+.adm-modal-body {
+  padding: 20px 24px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.adm-modal-intro {
+  margin: 0;
+  color: #475569;
+  font-size: 0.88rem;
+  line-height: 1.45;
+}
+
+.adm-modal-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 40px 20px;
+  color: #64748B;
+  font-size: 0.9rem;
+}
+
+.adm-modal-loading .spin {
+  font-size: 1.8rem;
+  color: var(--admin-primary, #F05A36);
+  animation: pe-spin 0.8s linear infinite;
+}
+
+/* Staff Roles Modal Items */
+.adm-staff-modal-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.adm-staff-modal-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 12px 16px;
+  border: 1.5px solid #E2E8F0;
+  border-radius: 14px;
+  background: #ffffff;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.adm-staff-modal-item:hover {
+  border-color: #CBD5E1;
+  background: #F8FAFC;
+  transform: translateY(-1px);
+}
+
+.adm-staff-modal-item.is-active {
+  border-color: #86EFAC;
+  background: #F0FDF4;
+}
+
+.adm-staff-item-icon {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: #F1F5F9;
+  color: #475569;
+  font-size: 1.25rem;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+}
+
+.adm-staff-modal-item.is-active .adm-staff-item-icon {
+  background: #DCFCE7;
+  color: #16A34A;
+}
+
+.adm-staff-item-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+
+.adm-staff-item-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.adm-staff-item-head strong {
+  color: var(--navy, #0B192C);
+  font-size: 0.94rem;
+  font-weight: 700;
+}
+
+.adm-staff-badge-tag {
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.adm-staff-badge-tag.on {
+  background: #DCFCE7;
+  color: #15803D;
+}
+
+.adm-staff-badge-tag.off {
+  background: #F1F5F9;
+  color: #64748B;
+}
+
+.adm-staff-item-info small {
+  color: #64748B;
+  font-size: 0.78rem;
+  margin-top: 2px;
+}
+
+/* Badges Modal */
+.adm-badge-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.adm-badge-section-header {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.adm-badge-section-header h4 {
+  margin: 0;
+  color: var(--navy, #0B192C);
+  font-size: 0.98rem;
+  font-weight: 800;
+}
+
+.adm-badge-section-header small {
+  color: #64748B;
+  font-size: 0.78rem;
+}
+
+.adm-modal-showcase {
+  padding: 12px 14px;
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+}
+
+.adm-badges-list li.is-awarded {
+  background: #F0FDF4;
+  border: 1px solid #BBF7D0;
+}
+
+.adm-badge-emoji {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.adm-badge-texts {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.adm-badge-texts strong {
+  color: var(--navy, #0B192C);
+  font-size: 0.9rem;
+}
+
+.adm-badge-texts small {
+  color: #64748B;
+  font-size: 0.75rem;
+}
+
+.adm-modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 24px;
+  border-top: 1px solid #E2E8F0;
+  background: #FAFCFE;
+}
+
+.adm-modal-footer-hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #64748B;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.adm-modal-done-btn {
+  padding: 8px 20px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--admin-primary, #F05A36);
+  color: #ffffff;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+
+.adm-modal-done-btn:hover {
+  opacity: 0.9;
+}
+
+/* --------------------------------------------------
    Admin: award community badges
 -------------------------------------------------- */
 

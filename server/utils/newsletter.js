@@ -86,44 +86,8 @@ function digestEmail(digest, items, user) {
  * Returns { sent, skipped } (skipped when email isn't configured).
  */
 async function sendDigestNewsletter(digest) {
-  try {
-    if (!isEmailConfigured()) return { sent: 0, skipped: true };
-    const subscribers = await User.find({ role: 'user', newsletterOptIn: true }).select('_id name email').lean();
-    if (!subscribers.length) return { sent: 0, skipped: false };
-
-    const items = await NewsItem.find({ _id: { $in: [digest.topStory, ...digest.items].filter(Boolean) } }).lean();
-    let sent = 0;
-
-    for (let i = 0; i < subscribers.length; i += BATCH_SIZE) {
-      const batch = subscribers.slice(i, i + BATCH_SIZE);
-      // Each subscriber gets their own unsubscribe link, so one version each.
-      const versions = batch.map((user) => {
-        const { html, text } = digestEmail(digest, items, user);
-        return { to: [{ email: user.email, name: user.name }], htmlContent: html, textContent: text };
-      });
-
-      const response = await fetch(process.env.BREVO_API_URL || 'https://api.brevo.com/v3/smtp/email', {
-        method: 'POST',
-        headers: { 'api-key': process.env.BREVO_API_KEY, 'Content-Type': 'application/json', accept: 'application/json' },
-        body: JSON.stringify({
-          sender: { name: process.env.BREVO_SENDER_NAME || 'CodeSphere', email: process.env.BREVO_SENDER_EMAIL },
-          subject: `CodeSphere Tech Brief: ${digest.title}`,
-          htmlContent: versions[0].htmlContent,
-          messageVersions: versions,
-        }),
-        signal: AbortSignal.timeout(20000),
-      });
-      if (!response.ok) {
-        console.error('Newsletter send error:', response.status, await response.text().catch(() => ''));
-        continue;
-      }
-      sent += batch.length;
-    }
-    return { sent, skipped: false };
-  } catch (error) {
-    console.error('Newsletter error:', error.message);
-    return { sent: 0, skipped: false, error: error.message };
-  }
+  // Automated Digests & Periodic Newsletters are stopped.
+  return { sent: 0, skipped: true, stopped: true };
 }
 
 // ---------- Daily "Today in Tech" email (separate opt-in) ----------
@@ -159,39 +123,8 @@ function dailyEmail(brief, items, user) {
  * Brevo's free plan allows 300 emails/day: capped by DAILY_EMAIL_LIMIT (default 250).
  */
 async function sendDailyBriefEmail(brief, items) {
-  try {
-    if (!isEmailConfigured()) return { sent: 0, skipped: true };
-    const limit = Math.max(0, Number(process.env.DAILY_EMAIL_LIMIT) || 250);
-    const subscribers = await User.find({ role: 'user', dailyNewsOptIn: true }).sort({ _id: 1 }).limit(limit).select('_id name email').lean();
-    let sent = 0;
-    for (let i = 0; i < subscribers.length; i += BATCH_SIZE) {
-      const batch = subscribers.slice(i, i + BATCH_SIZE);
-      const versions = batch.map((user) => {
-        const { html, text } = dailyEmail(brief, items, user);
-        return { to: [{ email: user.email, name: user.name }], htmlContent: html, textContent: text };
-      });
-      const response = await fetch(process.env.BREVO_API_URL || 'https://api.brevo.com/v3/smtp/email', {
-        method: 'POST',
-        headers: { 'api-key': process.env.BREVO_API_KEY, 'Content-Type': 'application/json', accept: 'application/json' },
-        body: JSON.stringify({
-          sender: { name: process.env.BREVO_SENDER_NAME || 'CodeSphere', email: process.env.BREVO_SENDER_EMAIL },
-          subject: `Today in Tech: ${items[0]?.title || 'your daily brief'}`.slice(0, 150),
-          htmlContent: versions[0].htmlContent,
-          messageVersions: versions,
-        }),
-        signal: AbortSignal.timeout(20000),
-      });
-      if (!response.ok) {
-        console.error('Daily email error:', response.status, await response.text().catch(() => ''));
-        continue;
-      }
-      sent += batch.length;
-    }
-    return { sent, skipped: false };
-  } catch (error) {
-    console.error('Daily email error:', error.message);
-    return { sent: 0, skipped: false, error: error.message };
-  }
+  // Automated Digests & Periodic Newsletters are stopped.
+  return { sent: 0, skipped: true, stopped: true };
 }
 
 module.exports = { sendDigestNewsletter, sendDailyBriefEmail, isEmailConfigured, unsubscribeToken, verifyUnsubscribe };
