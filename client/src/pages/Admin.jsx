@@ -19,6 +19,8 @@ import AdminBadgeAwards from '../components/AdminBadgeAwards';
 import AdminStaffRoles from '../components/AdminStaffRoles';
 import MemberProfile from './MemberProfile';
 import BroadcastOptions from '../components/BroadcastOptions';
+import MemberLink from '../components/MemberLink';
+import PushEmailButton from '../components/PushEmailButton';
 import ProfileAvatar from '../components/ProfileAvatar';
 
 const initialForm = {
@@ -120,8 +122,6 @@ function createUsersCsv(users) {
     ['Skills', (user) => (user.skillDetails || [])
       .map((skill) => `${skill.name} (${skill.level})`)
       .join('; ')],
-    ['Technical interests', (user) => (user.technicalInterests || []).join('; ')],
-    ['Learning goals', (user) => (user.learningGoals || []).join('; ')],
     ['GitHub URL', (user) => user.github],
     ['LinkedIn URL', (user) => user.linkedin],
     ['Portfolio URL', (user) => user.portfolio],
@@ -1638,6 +1638,10 @@ export default function Admin() {
                                   : 'Publish'}
                               </button>
 
+                              {event.status === 'published' && (
+                                <PushEmailButton kind="event" id={event._id} title={event.title} label="Email" />
+                              )}
+
                               <button
                                 type="button"
                                 className="admin-delete-button"
@@ -1953,7 +1957,7 @@ export default function Admin() {
 
                       {(form.status === 'published' || !editingId) && (
                         <div className="admin-form-field admin-field-full">
-                          <BroadcastOptions value={eventBroadcastOptions} onChange={setEventBroadcastOptions} />
+                          <BroadcastOptions value={eventBroadcastOptions} onChange={setEventBroadcastOptions} allowEmail={true} />
                         </div>
                       )}
                       <div className="admin-form-actions admin-field-full">
@@ -2107,7 +2111,7 @@ export default function Admin() {
                           </div>
 
                           <div className="admin-member-details">
-                            <h3>{registeredUser.name}</h3>
+                            <h3><MemberLink user={registeredUser}>{registeredUser.name}</MemberLink></h3>
 
                             <p>{registeredUser.email}</p>
 
@@ -2133,8 +2137,15 @@ export default function Admin() {
                         <div className="admin-user-card-actions">
                           {registeredUser.role !== 'admin' && (
                             <>
-                              <AdminStaffRoles userId={registeredUser._id} initial={registeredUser.staffRoles || []} />
-                              <AdminBadgeAwards userId={registeredUser._id} userName={registeredUser.name} />
+                              <AdminStaffRoles
+                                userId={registeredUser._id}
+                                userName={registeredUser.name}
+                                initial={registeredUser.staffRoles || []}
+                              />
+                              <AdminBadgeAwards
+                                userId={registeredUser._id}
+                                userName={registeredUser.name}
+                              />
                             </>
                           )}
 
@@ -2302,7 +2313,9 @@ export default function Admin() {
 
                             <div className="admin-member-info">
                               <div className="admin-member-avatar">
-                                <ProfileAvatar user={member} name={member.name} fallback={getInitial(member.name)} loading="lazy" />
+                                {member.avatar
+                                  ? <img src={member.avatar} alt="" loading="lazy" />
+                                  : getInitial(member.name)}
                               </div>
 
                               <div className="admin-member-details">
@@ -2665,7 +2678,7 @@ export default function Admin() {
                             />
 
                             <div className="admin-team-member-card-content">
-                              <h3>{member.name}</h3>
+                              <h3><MemberLink user={member}>{member.name}</MemberLink></h3>
 
                               <p className="team-member-role">
                                 {member.role}

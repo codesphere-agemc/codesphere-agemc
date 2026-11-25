@@ -131,10 +131,8 @@ async function tick() {
 }
 
 function startBugReminder() {
-  if (process.env.BUG_REMINDER === 'off') return;
-  const run = () => tick().catch((error) => console.error('Bug reminder error:', error.message));
-  setTimeout(run, 30000).unref();
-  setInterval(run, 10 * 60 * 1000).unref();
+  // Periodic bug reminder emails are stopped.
+  return;
 }
 
 module.exports = { startBugReminder, sendBugReminders, reminderFor };

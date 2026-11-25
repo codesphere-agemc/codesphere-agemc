@@ -7,6 +7,7 @@ import SafeText from '../components/SafeText';
 import HackathonJudging from '../components/HackathonJudging';
 import HackathonSubmission, { SubmissionDetails, SubmissionLinks } from '../components/HackathonSubmission';
 import ProfileAvatar from '../components/ProfileAvatar';
+import MemberLink from '../components/MemberLink';
 import { useAuth } from '../context/AuthContext';
 import { useNotice } from '../context/NoticeContext';
 import { apiRequest } from '../lib/api';
@@ -42,7 +43,16 @@ function ProjectCard({ s, showAward }) {
       {showAward && s.award && <span className="hk-award"><i className="bi bi-award-fill" aria-hidden="true" /> {s.award}</span>}
       <h3>{s.title}</h3>
       {s.tagline && <p className="hk-project-tagline">{s.tagline}</p>}
-      {s.team && <p className="hk-project-team"><i className="bi bi-people" aria-hidden="true" /> {s.team.name} · {s.team.members.map((m) => m.name).join(', ')}</p>}
+      {s.team && (
+        <p className="hk-project-team">
+          <i className="bi bi-people" aria-hidden="true" /> {s.team.name} · {s.team.members.map((m, idx) => (
+            <span key={m.id || idx}>
+              {idx > 0 && ', '}
+              <MemberLink user={m}>{m.name}</MemberLink>
+            </span>
+          ))}
+        </p>
+      )}
       {s.track && <span className="hk-chip">{s.track}</span>}
       {s.techStack?.length > 0 && <div className="hk-themes">{s.techStack.map((t) => <span key={t}>{t}</span>)}</div>}
       <details>
@@ -137,7 +147,7 @@ function TeamPanel({ h, team, reload, slug }) {
         {team.members.map((m) => (
           <li key={m.id}>
             <ProfileAvatar user={m} name={m.name} fallback={m.initials} className="hk-avatar" fallbackClassName="hk-avatar" aria-hidden="true" />
-            <span>{m.name}{m.id === team.leaderId && <em> · Leader</em>}{m.id === String(user._id || user.id) && <em> · You</em>}</span>
+            <span><MemberLink user={m}>{m.name}</MemberLink>{m.id === team.leaderId && <em> · Leader</em>}{m.id === String(user._id || user.id) && <em> · You</em>}</span>
             {team.isLeader && m.id !== team.leaderId && h.canChangeTeam && (
               <button type="button" className="hk-icon-btn" title={`Remove ${m.name}`} aria-label={`Remove ${m.name}`} disabled={busy}
                 onClick={() => window.confirm(`Remove ${m.name} from the team?`) && call(`/teams/members/${m.id}`, { method: 'DELETE' })}>

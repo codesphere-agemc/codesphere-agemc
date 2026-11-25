@@ -7,6 +7,8 @@ import { STATUS, categoryOf } from '../lib/projects';
 import { formatDate, timeAgo } from '../lib/time';
 import ProjectTeam from '../components/ProjectTeam';
 import ProjectUpdates from '../components/ProjectUpdates';
+import MemberLink from '../components/MemberLink';
+import ProfileAvatar from '../components/ProfileAvatar';
 
 // Outbound clicks for analytics (fire and forget).
 const trackClick = (name, projectId) => apiRequest('/projects/track', { method: 'POST', body: JSON.stringify({ name, projectId }) }).catch(() => {});
@@ -65,12 +67,15 @@ export default function ProjectDetail() {
                   {p.canEdit && <Link to={`/projects/${p.id}/edit`} className="pd-ghost"><i className="bi bi-pencil" aria-hidden="true" /> Edit</Link>}
                 </div>
                 {p.githubUnavailable && <p className="pd-warning"><i className="bi bi-exclamation-triangle" aria-hidden="true" /> We can&apos;t reach this project&apos;s GitHub repository any more. Update the link in the editor.</p>}
-                <p className="pd-by">
-                  Built by <strong>{p.owner?.name}</strong>
-                  {p.ownershipVerified && <span className="pd-verified" title={`Verified with GitHub as @${p.ownershipVerified.login}`}><i className="bi bi-patch-check-fill" aria-hidden="true" /> Verified {p.ownershipVerified.kind}</span>}
-                  {p.contributors.length > 1 && <> and {p.contributors.length - 1} more</>}
-                  {p.publishedAt && <> · published {formatDate(p.publishedAt)}</>}
-                  {p.guided && <> · from the guided project <Link to={`/projects/guided/${p.guided.slug}`}>{p.guided.title}</Link></>}
+                <p className="pd-by" style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+                  <ProfileAvatar user={p.owner} name={p.owner?.name} style={{ width: 28, height: 28, borderRadius: '50%' }} aria-hidden="true" />
+                  <span>
+                    Built by <strong><MemberLink user={p.owner}>{p.owner?.name}</MemberLink></strong>
+                    {p.ownershipVerified && <span className="pd-verified" title={`Verified with GitHub as @${p.ownershipVerified.login}`}><i className="bi bi-patch-check-fill" aria-hidden="true" /> Verified {p.ownershipVerified.kind}</span>}
+                    {p.contributors?.length > 1 && <> and {p.contributors.length - 1} more</>}
+                    {p.publishedAt && <> · published {formatDate(p.publishedAt)}</>}
+                    {p.guided && <> · from the guided project <Link to={`/projects/guided/${p.guided.slug}`}>{p.guided.title}</Link></>}
+                  </span>
                 </p>
               </div>
             </header>
@@ -81,7 +86,7 @@ export default function ProjectDetail() {
                   <section className="pd-block">
                     <h2>Project story</h2>
                     {p.problem && <><h3>The problem</h3><p className="pd-text">{p.problem}</p></>}
-                    {p.solution && <><h3>What it does</h3><p className="pd-text">{p.solution}</p></>}
+                    {p.solution && <p className="pd-text" style={{ whiteSpace: 'pre-line' }}>{p.solution}</p>}
                     {p.features?.length > 0 && <><h3>Key features</h3><ul className="pd-list">{p.features.map((f) => <li key={f}>{f}</li>)}</ul></>}
                   </section>
                 )}
@@ -123,10 +128,24 @@ export default function ProjectDetail() {
                   <div className="ph-chips">{p.techStack.map((t) => <span key={t} className="ph-chip">{t}</span>)}</div>
                   {p.tags?.length > 0 && <div className="ph-chips">{p.tags.map((t) => <span key={t} className="ph-chip topic">#{t}</span>)}</div>}
                 </section>
-                {p.contributors.length > 0 && (
+                {p.contributors?.length > 0 && (
                   <section className="pd-block">
                     <h2>Contributors</h2>
-                    <ul className="pd-people">{p.contributors.map((c, i) => <li key={`${c.name}-${i}`}><strong>{c.name}</strong>{c.role && <span>{c.role}</span>}</li>)}</ul>
+                    <ul className="pd-people">
+                      {p.contributors.map((c, i) => (
+                        <li key={`${c.name}-${i}`} style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '10px' }}>
+                          <ProfileAvatar user={c.user || c} name={c.name} style={{ width: 34, height: 34, borderRadius: '50%', flexShrink: 0 }} aria-hidden="true" />
+                          <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+                            <strong>
+                              <MemberLink user={c.user || { name: c.name, username: c.username || c.profileLink }}>
+                                {c.name}
+                              </MemberLink>
+                            </strong>
+                            {c.role && <span>{c.role}</span>}
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
                   </section>
                 )}
                 {p.github && (

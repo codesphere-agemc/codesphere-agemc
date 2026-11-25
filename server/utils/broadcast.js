@@ -103,8 +103,12 @@ async function broadcastUpdate({
   notificationType = 'announcement',
   sendNotification = true,
   sendEmail = true,
+  type = '', // 'event' or other category
 }) {
   try {
+    const isEvent = type === 'event' || notificationType === 'event' || String(link || '').startsWith('/events');
+    const shouldSendEmail = Boolean(sendEmail) && isEvent;
+
     const query = { role: 'user' };
     if (Array.isArray(recipientUserIds)) query._id = { $in: recipientUserIds };
     const users = await User.find(query)
@@ -122,7 +126,7 @@ async function broadcastUpdate({
         body: body.slice(0, 400),
         link,
       }) : Promise.resolve(),
-      sendEmail
+      shouldSendEmail
         ? sendUpdateEmails(users, { title, body, link, htmlBody, imageUrl, emailExcludeUserIds })
         : Promise.resolve({ sent: 0, attempted: 0, skipped: true, disabled: true }),
     ]);

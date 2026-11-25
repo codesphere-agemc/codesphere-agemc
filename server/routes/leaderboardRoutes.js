@@ -69,7 +69,7 @@ router.get('/', optionalAuth, async (req, res) => {
 
     const [users, debugDocs, challengeDocs, badgeDocs] = await Promise.all([
       User.find({ role: 'user', ...(year ? { yearOfStudy: year } : {}) })
-        .select('name yearOfStudy collegeName createdAt badgeShowcase profileImage')
+        .select('name username yearOfStudy collegeName createdAt badgeShowcase profileImage')
         .lean(),
       DebugProgress.find().select('user completed streak bestStreak lastCompletedDate').lean(),
       ChallengeProgress.find().select('user solved').lean(),
@@ -107,6 +107,7 @@ router.get('/', optionalAuth, async (req, res) => {
           badgeCount: badges.length,
           showcase: (user.badgeShowcase || []).filter((b) => badges.includes(b)),
           name: user.name,
+          username: user.username || '',
           avatar: user.profileImage?.url || '',
           year: user.yearOfStudy,
           college: user.collegeName,

@@ -23,6 +23,7 @@ const TYPE_ICONS = {
   hackathon: 'bi-trophy',
   'host-review': 'bi-megaphone',
   project: 'bi-rocket-takeoff',
+  result: 'bi-clipboard-data',
   system: 'bi-info-circle',
 };
 
@@ -129,6 +130,24 @@ export default function NotificationBell({ compact = false }) {
   const openItem = (item) => {
     setOpen(false);
     if (!item.read) apiRequest('/notifications/read', { method: 'POST', body: JSON.stringify({ ids: [item._id] }) }).then(load).catch(() => {});
+  };
+
+  const deleteItem = async (e, item) => {
+    e.preventDefault();
+    e.stopPropagation();
+    try {
+      await apiRequest(`/notifications/${item._id}`, { method: 'DELETE' });
+      setData((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          items: prev.items.filter((i) => i._id !== item._id),
+          unread: item.read ? prev.unread : Math.max(0, prev.unread - 1),
+        };
+      });
+    } catch {
+      load();
+    }
   };
 
   const toggleMute = async (type) => {
@@ -329,7 +348,7 @@ export default function NotificationBell({ compact = false }) {
                   {MUTE_LABELS[type] || type}
                 </label>
               ))}
-              <small>These settings only control in-app notifications. Manage email preferences from your profile.</small>
+              <small>These settings control your in-app notifications.</small>
               <small>Moderation and account messages are always shown.</small>
             </div>
           )}
@@ -338,15 +357,24 @@ export default function NotificationBell({ compact = false }) {
             {!data && <li className="notif-empty">Loading…</li>}
             {data?.items.length === 0 && <li className="notif-empty">You&apos;re all caught up 🎉</li>}
             {data?.items.map((item) => (
-              <li key={item._id} className={item.read ? '' : 'is-unread'}>
-                <Link to={item.link || '#'} onClick={() => openItem(item)}>
+              <li key={item._id} className={`notif-item ${item.read ? '' : 'is-unread'}`}>
+                <Link to={item.link || '#'} onClick={() => openItem(item)} className="notif-item-link">
                   <i className={`bi ${TYPE_ICONS[item.type] || 'bi-bell'}`} aria-hidden="true" />
-                  <span>
+                  <span className="notif-item-content">
                     <strong>{item.title}</strong>
                     {item.body && <small className="notif-body">{item.body}</small>}
                     <small>{timeAgo(item.createdAt)}</small>
                   </span>
                 </Link>
+                <button
+                  type="button"
+                  className="notif-item-delete"
+                  onClick={(e) => deleteItem(e, item)}
+                  title="Delete notification"
+                  aria-label={`Delete notification: ${item.title}`}
+                >
+                  <i className="bi bi-trash3" aria-hidden="true" />
+                </button>
               </li>
             ))}
           </ul>

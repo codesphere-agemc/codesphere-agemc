@@ -198,8 +198,8 @@ router.get('/admin/:id', manageById, async (req, res) => {
   const h = await Hackathon.findById(req.params.id).lean();
   if (!h) return res.status(404).json({ message: 'Not found.' });
   const [teams, subs] = await Promise.all([
-    HackathonTeam.find({ hackathon: h._id }).populate('members', 'name email yearOfStudy profileImage').sort({ createdAt: 1 }).lean(),
-    HackathonSubmission.find({ hackathon: h._id }).populate({ path: 'team', select: 'name members', populate: { path: 'members', select: 'name yearOfStudy profileImage' } }).sort({ rank: 1, submittedAt: 1, updatedAt: -1 }).lean(),
+    HackathonTeam.find({ hackathon: h._id }).populate('members', 'name username email yearOfStudy profileImage').sort({ createdAt: 1 }).lean(),
+    HackathonSubmission.find({ hackathon: h._id }).populate({ path: 'team', select: 'name members', populate: { path: 'members', select: 'name username yearOfStudy profileImage' } }).sort({ rank: 1, submittedAt: 1, updatedAt: -1 }).lean(),
   ]);
   res.json({
     hackathon: { ...card(h), description: h.description, rules: h.rules },

@@ -52,7 +52,14 @@ const projectSchema = new Schema({
   level: { type: String, enum: LEVELS, default: 'Beginner', index: true },
   projectStatus: { type: String, enum: ['prototype', 'in-progress', 'completed', 'archived'], default: 'completed' },
   teamType: { type: String, enum: ['individual', 'team'], default: 'individual' },
-  contributors: [{ name: { type: String, maxlength: 80 }, role: { type: String, maxlength: 80 }, user: { type: ObjectId, ref: 'User' } }],
+  contributors: [{
+    name: { type: String, maxlength: 80 },
+    role: { type: String, maxlength: 80 },
+    profileLink: { type: String, maxlength: 300, default: '' },
+    username: { type: String, maxlength: 60, default: '' },
+    avatarUrl: { type: String, default: '' },
+    user: { type: ObjectId, ref: 'User' },
+  }],
   techStack: [{ type: String, maxlength: 40 }],
   tags: [{ type: String, maxlength: 30 }],
 

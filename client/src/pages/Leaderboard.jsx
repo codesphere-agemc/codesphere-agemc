@@ -186,7 +186,13 @@ function ProfileModal({ row, onClose, catalog }) {
           <Avatar row={row} size="lg" />
           <div>
             <h2 id="lb-modal-name">
-              {row.name}
+              <Link
+                to={`/user/${encodeURIComponent(row.username || row.id)}`}
+                className="member-profile-link"
+                style={{ color: 'inherit', textDecoration: 'none' }}
+              >
+                {row.name}
+              </Link>
               {row.isMe && <span className="lb-you">You</span>}
             </h2>
             {row.level && (
@@ -195,6 +201,23 @@ function ProfileModal({ row, onClose, catalog }) {
             <p>{row.year} · {row.college}</p>
             <p className="lb-modal-since">
               <i className="bi bi-calendar3" aria-hidden="true" /> Member since {memberSince(row.memberSince)}
+            </p>
+            <p style={{ marginTop: '8px' }}>
+              <Link
+                to={`/user/${encodeURIComponent(row.username || row.id)}`}
+                className="member-profile-link"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  fontSize: '0.82rem',
+                  fontWeight: 700,
+                  color: 'var(--gold, #F05A36)',
+                  textDecoration: 'none',
+                }}
+              >
+                <i className="bi bi-person-circle" aria-hidden="true" /> View Public Profile →
+              </Link>
             </p>
           </div>
         </div>

@@ -19,6 +19,7 @@
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "react-router-dom": "^7.18.4",
+    "read-excel-file": "^9.3.20",
     "tesseract.js": "^7.0.0",
     "three": "^0.180.0"
   },
