@@ -122,8 +122,6 @@ function createUsersCsv(users) {
     ['Skills', (user) => (user.skillDetails || [])
       .map((skill) => `${skill.name} (${skill.level})`)
       .join('; ')],
-    ['Technical interests', (user) => (user.technicalInterests || []).join('; ')],
-    ['Learning goals', (user) => (user.learningGoals || []).join('; ')],
     ['GitHub URL', (user) => user.github],
     ['LinkedIn URL', (user) => user.linkedin],
     ['Portfolio URL', (user) => user.portfolio],

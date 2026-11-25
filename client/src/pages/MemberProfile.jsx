@@ -6,6 +6,7 @@ import Navbar from '../components/Navbar';
 import BadgeStrip from '../components/BadgeStrip';
 import CodingStats from '../components/CodingStats';
 import ProfileAvatar from '../components/ProfileAvatar';
+import ProjectCard from '../components/ProjectCard';
 import '../css/MemberProfile.css';
 
 const CODING_ICONS = {
@@ -392,48 +393,9 @@ export default function MemberProfile({
 
                 {projects.length > 0 && (
                   <Section title="Projects" icon="bi-kanban">
-                    <div className="member-profile-project-grid">
+                    <div className="ph-grid member-profile-ph-grid">
                       {projects.map((project) => (
-                        <article className="member-profile-project" key={project._id}>
-                          <div className="member-profile-project-top">
-                            <span className="member-profile-project-icon" aria-hidden="true">
-                              <i className="bi bi-code-slash" />
-                            </span>
-                            {project.type && (
-                              <span className="member-profile-project-type">{project.type}</span>
-                            )}
-                          </div>
-
-                          <h4>{project.title}</h4>
-                          {project.description && <p>{project.description}</p>}
-
-                          {project.technologies?.length > 0 && (
-                            <ChipList items={project.technologies} />
-                          )}
-
-                          {(project.githubUrl || project.liveUrl) && (
-                            <div className="member-profile-project-links">
-                              {project.githubUrl && (
-                                <a
-                                  href={openExternalLink(project.githubUrl)}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                >
-                                  <i className="bi bi-github" aria-hidden="true" /> Source
-                                </a>
-                              )}
-                              {project.liveUrl && (
-                                <a
-                                  href={openExternalLink(project.liveUrl)}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                >
-                                  <i className="bi bi-box-arrow-up-right" aria-hidden="true" /> Live
-                                </a>
-                              )}
-                            </div>
-                          )}
-                        </article>
+                        <ProjectCard key={project.id || project._id || project.slug} p={project} />
                       ))}
                     </div>
                   </Section>
@@ -522,18 +484,6 @@ export default function MemberProfile({
                     )}
                   </div>
                 </Section>
-
-                {member.technicalInterests?.length > 0 && (
-                  <Section title="Technical interests" icon="bi-lightbulb">
-                    <ChipList items={member.technicalInterests} />
-                  </Section>
-                )}
-
-                {member.learningGoals?.length > 0 && (
-                  <Section title="Learning goals" icon="bi-bullseye">
-                    <ChipList items={member.learningGoals} />
-                  </Section>
-                )}
               </aside>
             </div>
           </>
