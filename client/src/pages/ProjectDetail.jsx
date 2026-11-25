@@ -86,7 +86,7 @@ export default function ProjectDetail() {
                   <section className="pd-block">
                     <h2>Project story</h2>
                     {p.problem && <><h3>The problem</h3><p className="pd-text">{p.problem}</p></>}
-                    {p.solution && <><h3>What it does</h3><p className="pd-text">{p.solution}</p></>}
+                    {p.solution && <p className="pd-text" style={{ whiteSpace: 'pre-line' }}>{p.solution}</p>}
                     {p.features?.length > 0 && <><h3>Key features</h3><ul className="pd-list">{p.features.map((f) => <li key={f}>{f}</li>)}</ul></>}
                   </section>
                 )}

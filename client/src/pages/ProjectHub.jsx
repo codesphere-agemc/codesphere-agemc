@@ -212,7 +212,7 @@ export default function ProjectHub() {
                 {mine.projects.length === 0
                   ? <div className="ph-empty"><p>Nothing yet. Import a project from GitHub or add one manually.</p></div>
                   : (
-                    <div className="ph-mine">
+                    <div className="ph-grid ph-mine">
                       {mine.projects.map((p) => (
                         <div key={p.id} className="ph-mine-row">
                           <ProjectCard p={p} showStatus />

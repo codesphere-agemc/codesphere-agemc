@@ -15,12 +15,14 @@ const ROLES = [
 export default function AdminStaffRoles({ userId, userName, initial = [] }) {
   const { showNotice } = useNotice();
   const [roles, setRoles] = useState(initial);
+  const [prevInitial, setPrevInitial] = useState(initial);
   const [saving, setSaving] = useState('');
   const [open, setOpen] = useState(false);
 
-  useEffect(() => {
+  if (initial !== prevInitial) {
+    setPrevInitial(initial);
     setRoles(initial);
-  }, [initial]);
+  }
 
   useEffect(() => {
     if (!open) return undefined;
