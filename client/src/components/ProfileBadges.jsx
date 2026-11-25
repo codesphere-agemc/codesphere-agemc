@@ -116,6 +116,7 @@ export default function ProfileBadges({
   preview = false,
   completion = 0,
   compact = false,
+  alwaysOpen = false,
 }) {
   const [data, setData] = useState(null);
   const [catalog, setCatalog] = useState(null);
@@ -124,7 +125,12 @@ export default function ProfileBadges({
   const [open, setOpen] = useState(null);
   const [showcase, setShowcase] = useState([]);
   const [saving, setSaving] = useState(false);
-  const [expanded, setExpanded] = useStoredToggle('cs_profile_progress_open', false);
+  const [storedExpanded, setStoredExpanded] = useStoredToggle('cs_profile_progress_open', false);
+  const expanded = alwaysOpen || storedExpanded;
+  const setExpanded = (val) => {
+    if (alwaysOpen) return;
+    setStoredExpanded(val);
+  };
 
   // The badge strip on the profile card can ask this section to open.
   useEffect(() => {
@@ -218,15 +224,15 @@ export default function ProfileBadges({
   if (compact) {
     return (
       <Link
-        to="/user/milestone"
+        to="/user/projects"
         className="bdg-overview-link"
-        aria-label={`View My Badges. Current level ${level.name}; ${data.earnedCount} of ${data.totalCount} badges earned.`}
+        aria-label={`View My Projects & Badges. Current level ${level.name}; ${data.earnedCount} of ${data.totalCount} badges earned.`}
       >
         <section className="bdg-overview-preview">
           <div className="bdg-hero">
             <div className="bdg-overview-heading">
               <span className="bdg-kicker">BADGE PROGRESS</span>
-              <span className="bdg-overview-view">View My Badges <i className="bi bi-arrow-up-right" aria-hidden="true" /></span>
+              <span className="bdg-overview-view">View Badges &amp; Projects <i className="bi bi-arrow-up-right" aria-hidden="true" /></span>
             </div>
             <div className="bdg-level">
               <span className="bdg-level-emoji" aria-hidden="true">{level.emoji}</span>
@@ -294,9 +300,11 @@ export default function ProfileBadges({
     <section className="bdg-section" id="codesphere-progress" aria-labelledby="bdg-title">
       {/* Level + XP */}
       <div className="bdg-hero">
-        <button type="button" className="bdg-collapse" onClick={() => setExpanded(false)} aria-expanded="true">
-          Hide details <i className="bi bi-chevron-up" aria-hidden="true" />
-        </button>
+        {!alwaysOpen && (
+          <button type="button" className="bdg-collapse" onClick={() => setExpanded(false)} aria-expanded="true">
+            Hide details <i className="bi bi-chevron-up" aria-hidden="true" />
+          </button>
+        )}
         <div className="bdg-level">
           <span className="bdg-level-emoji" aria-hidden="true">{level.emoji}</span>
           <div>

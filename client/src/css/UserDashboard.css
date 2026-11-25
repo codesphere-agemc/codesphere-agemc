@@ -13,6 +13,140 @@
   --user-card-shadow: 0 12px 35px rgba(28, 48, 69, 0.045);
 }
 
+/* =========================================
+   OVERVIEW BADGES & MILESTONES BLOCK
+   ========================================= */
+
+.dashboard-overview-badges-block {
+  background: var(--user-surface, #ffffff);
+  border: 1px solid var(--user-border, #e8edf2);
+  border-radius: 18px;
+  padding: 24px;
+  box-shadow: var(--user-card-shadow, 0 12px 35px rgba(28, 48, 69, 0.045));
+}
+
+.dashboard-overview-badges-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.dashboard-overview-badges-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(20, 45, 69, 0.12), rgba(20, 45, 69, 0.04));
+  color: var(--user-navy, #142d45);
+  display: grid;
+  place-items: center;
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.dashboard-overview-badges-header h2 {
+  font-size: 1.2rem;
+  font-weight: 750;
+  color: var(--user-navy, #142d45);
+  margin: 0;
+  line-height: 1.3;
+}
+
+.dashboard-overview-badges-header p {
+  margin: 2px 0 0;
+  font-size: 0.85rem;
+  color: var(--user-muted, #748396);
+}
+
+.dashboard-overview-badges-block .bdg-section {
+  margin-bottom: 0;
+}
+
+/* Sidebar scrollable Leaderboard section */
+.profile-sidebar-leaderboard-card {
+  padding: 0 !important;
+  overflow: hidden;
+  border: 1px solid var(--user-border, #e8edf2);
+  border-radius: 18px;
+  background: #ffffff;
+}
+
+.profile-sidebar-leaderboard-card .badge-leaderboard {
+  border: none;
+  box-shadow: none;
+  border-radius: 0;
+  padding: 18px 16px;
+  max-height: 440px;
+  display: flex;
+  flex-direction: column;
+}
+
+.profile-sidebar-leaderboard-card .badge-leaderboard-list {
+  overflow-y: auto;
+  max-height: 290px;
+  padding-right: 4px;
+}
+
+.profile-sidebar-leaderboard-card .badge-leaderboard-list::-webkit-scrollbar {
+  width: 5px;
+}
+
+.profile-sidebar-leaderboard-card .badge-leaderboard-list::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 4px;
+}
+
+.profile-sidebar-leaderboard-card .badge-leaderboard-list::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+.profile-sidebar-leaderboard-card .badge-leaderboard-list::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* =========================================
+   RESPONSIVE ORDER FOR OVERVIEW
+   (Coding at a glance before profile completion on small screens)
+   ========================================= */
+
+@media (max-width: 900px) {
+  .dashboard-overview-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .dashboard-overview-layout .student-profile-sidebar {
+    display: contents;
+  }
+
+  .dashboard-overview-layout .student-identity-card {
+    order: 1;
+  }
+
+  .dashboard-overview-layout .student-profile-main {
+    order: 2;
+    display: contents;
+  }
+
+  .dashboard-overview-layout .student-profile-main > .coding-stats-card {
+    order: 2;
+  }
+
+  .dashboard-overview-layout .profile-completion-card {
+    order: 3;
+  }
+
+  .dashboard-overview-layout .profile-sidebar-leaderboard-card {
+    order: 4;
+  }
+
+  .dashboard-overview-layout .dashboard-overview-badges-block {
+    order: 5;
+  }
+}
+
 .user-dashboard-page {
   display: flex;
   width: 100%;

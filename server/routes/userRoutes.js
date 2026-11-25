@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const User = require('../models/User');
+const { Project: ShowcaseProject, ProjectUpdate, GuidedProgress } = require('../models/Project');
 const { protect, adminOnly, STAFF_ROLES } = require('../middleware/authMiddleware');
 const { notify } = require('../utils/notify');
 const { createLimiter } = require('../utils/rateLimit');
@@ -184,11 +185,9 @@ const allowedProfileFields = [
   'github',
   'linkedin',
   'portfolio',
-  'technicalInterests',
   // Accept the old flat skill payload, then normalize it to skillDetails.
   'skills',
   'skillDetails',
-  'learningGoals',
   'codingProfiles',
   'achievements',
   'collegeName',
@@ -201,7 +200,7 @@ router.get('/admin/export', protect, adminOnly, async (req, res) => {
   try {
     const users = await User.find({ role: 'user' })
       .select(
-        'name email phone city gender dateOfBirth bio collegeName yearOfStudy degree department graduationYear github linkedin portfolio technicalInterests skillDetails codingProfiles achievements learningGoals profileComplete createdAt'
+        'name email phone city gender dateOfBirth bio collegeName yearOfStudy degree department graduationYear github linkedin portfolio skillDetails codingProfiles achievements profileComplete createdAt'
       )
       .sort({ createdAt: -1 })
       .lean();
@@ -477,9 +476,7 @@ router.patch('/profile', protect, async (req, res) => {
     }
 
     const arrayFields = [
-      'technicalInterests',
       'skills',
-      'learningGoals',
     ];
 
     for (const field of arrayFields) {
@@ -777,7 +774,7 @@ router.get('/profile/:username', protect, async (req, res) => {
 
     const member = await User.findOne(filter)
       .select(
-      'name username collegeName degree department yearOfStudy graduationYear profileImage bio github linkedin portfolio technicalInterests skills skillDetails learningGoals codingProfiles achievements createdAt'
+      'name username collegeName degree department yearOfStudy graduationYear profileImage bio github linkedin portfolio skills skillDetails codingProfiles achievements createdAt'
       )
       .lean();
 
@@ -788,10 +785,44 @@ router.get('/profile/:username', protect, async (req, res) => {
       });
     }
 
-    member.projects = await Project.find({ user: member._id })
-      .sort({ order: 1, featured: -1, updatedAt: -1 })
-      .select('title description technologies type githubUrl liveUrl status featured order')
-      .lean();
+    const showcaseProjects = await ShowcaseProject.find({
+      $or: [
+        { owner: member._id },
+        { 'contributors.user': member._id },
+        ...(member.username ? [{ 'contributors.username': member.username.toLowerCase() }] : []),
+      ],
+      status: 'published',
+      visibility: 'public',
+    })
+      .populate('owner', 'name username profileImage')
+      .sort({ featured: -1, updatedAt: -1 });
+
+    member.projects = showcaseProjects.map((p) => ({
+      _id: String(p._id),
+      id: String(p._id),
+      slug: p.slug,
+      title: p.title,
+      summary: p.summary,
+      category: p.category,
+      level: p.level,
+      teamType: p.teamType,
+      techStack: p.techStack || [],
+      cover: p.cover?.url || p.screenshots?.[0]?.url || '',
+      demoUrl: p.demoUrl || '',
+      githubUrl: p.github?.url || '',
+      featured: Boolean(p.featured),
+      status: p.status,
+      sourceType: p.sourceType,
+      owner: p.owner ? {
+        id: String(p.owner._id),
+        name: p.owner.name,
+        username: p.owner.username || '',
+        avatarUrl: p.owner.profileImage?.url || '',
+      } : null,
+      contributorsCount: (p.contributors || []).length,
+      publishedAt: p.publishedAt,
+      updatedAt: p.updatedAt,
+    }));
 
     member.achievements = [...(member.achievements || [])].sort(
       (first, second) =>
@@ -912,7 +943,6 @@ const DebugProgress = require('../models/DebugProgress');
 const Registration = require('../models/Registration');
 const Attendance = require('../models/Attendance');
 const { ReverseAttempt, ReverseBookmark } = require('../models/Reverse');
-const { Project: ShowcaseProject, ProjectUpdate, GuidedProgress } = require('../models/Project');
 const { ForumBookmark, ForumFollow, ForumReaction, ForumUpload } = require('../models/Forum');
 const EmailOtp = require('../models/EmailOtp');
 const PasswordResetOtp = require('../models/PasswordResetOtp');
