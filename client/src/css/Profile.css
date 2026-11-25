@@ -380,6 +380,31 @@
   line-height: 1.7;
 }
 
+.profile-complete-action-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  margin-top: 14px;
+  padding: 9px 16px;
+  border-radius: 10px;
+  background: var(--profile-orange, #df542f);
+  color: #ffffff;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(223, 84, 47, 0.2);
+}
+
+.profile-complete-action-button:hover {
+  background: var(--profile-orange-dark, #c74425);
+  color: #ffffff;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(223, 84, 47, 0.3);
+}
+
 .profile-welcome-label {
   display: inline-block;
   margin-bottom: 9px;
@@ -928,6 +953,95 @@
   display: flex;
   justify-content: flex-end;
   margin-top: 18px;
+}
+
+/* =========================================
+   PROJECTS HUB INTEGRATION IN PROFILE
+========================================= */
+
+.profile-projects-hub-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+}
+
+.profile-projects-hub-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 16px 20px;
+  border: 1px solid #E2E8F0;
+  border-left: 4px solid var(--profile-orange, #F05A36);
+  border-radius: 12px;
+  background: #FAFCFE;
+}
+
+.profile-projects-hub-banner strong {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--navy, #0B192C);
+  font-size: 0.95rem;
+  font-weight: 750;
+  margin-bottom: 4px;
+}
+
+.profile-projects-hub-banner p {
+  margin: 0;
+  color: #64748B;
+  font-size: 0.84rem;
+  line-height: 1.4;
+  max-width: 600px;
+}
+
+.profile-projects-hub-banner-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.profile-projects-ph-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.profile-project-card-wrap {
+  display: flex;
+  flex-direction: column;
+}
+
+.profile-project-card-wrap .ph-card {
+  height: 100%;
+}
+
+.profile-project-card-action {
+  margin-top: 8px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.member-profile-ph-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  width: 100%;
+}
+
+@media (max-width: 1100px) {
+  .member-profile-ph-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 680px) {
+  .member-profile-ph-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* =========================================

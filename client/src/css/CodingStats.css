@@ -1,5 +1,5 @@
 /* Coding at a glance (Overview) */
-.coding-stats-card { margin-top: 18px; padding: 20px; border: 1px solid var(--profile-border, #e5e9f0); border-radius: 15px; background: #fff; }
+.coding-stats-card { margin-top: 0; padding: 20px; border: 1px solid var(--profile-border, #e5e9f0); border-radius: 15px; background: #fff; }
 .member-profile-content .coding-stats-card { margin: 0 0 18px; }
 .coding-stats-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
 .coding-stats-head h2 { margin: 0 0 4px; color: var(--profile-navy, #153653); font-size: 18px; font-weight: 750; }

@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 
 const Project = require('../models/PortfolioProject'); // profile portfolio, not the Project Hub
+const { Project: ShowcaseProject } = require('../models/Project');
 const { protect } = require('../middleware/authMiddleware');
 
 const router = express.Router();
@@ -90,13 +91,51 @@ const validateProject = (data) => {
   return null;
 };
 
-// GET ALL PROJECTS OF LOGGED-IN USER
-// GET /api/projects
+// Clean up/purge legacy PortfolioProject documents once user accesses portfolio
 router.get('/', protect, async (req, res) => {
   try {
-    const projects = await Project.find({
-      user: req.user._id,
-    }).sort({ order: 1, featured: -1, updatedAt: -1 });
+    // Purge old PortfolioProject records for this user (migrated to ShowcaseProject)
+    await Project.deleteMany({ user: req.user._id });
+
+    const showcaseProjects = await ShowcaseProject.find({
+      $or: [
+        { owner: req.user._id },
+        { 'contributors.user': req.user._id },
+        ...(req.user.username ? [{ 'contributors.username': req.user.username.toLowerCase() }] : []),
+      ],
+    })
+      .populate('owner', 'name username profileImage')
+      .sort({ updatedAt: -1 });
+
+    const projects = showcaseProjects.map((p) => ({
+      _id: String(p._id),
+      id: String(p._id),
+      title: p.title,
+      summary: p.summary,
+      description: p.summary || p.problem || '',
+      technologies: p.techStack || [],
+      type: p.category || 'Other',
+      category: p.category,
+      level: p.level,
+      teamType: p.teamType,
+      cover: p.cover?.url || p.screenshots?.[0]?.url || '',
+      githubUrl: p.github?.url || '',
+      liveUrl: p.demoUrl || '',
+      demoUrl: p.demoUrl || '',
+      status: p.status,
+      featured: Boolean(p.featured),
+      slug: p.slug,
+      sourceType: p.sourceType,
+      owner: p.owner ? {
+        id: String(p.owner._id),
+        name: p.owner.name,
+        username: p.owner.username || '',
+        avatarUrl: p.owner.profileImage?.url || '',
+      } : null,
+      contributorsCount: (p.contributors || []).length,
+      publishedAt: p.publishedAt,
+      updatedAt: p.updatedAt,
+    }));
 
     return res.json({
       success: true,
