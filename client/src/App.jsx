@@ -49,6 +49,9 @@ import Materials from './pages/Materials';
 import Aptitude from './pages/Aptitude';
 import AptitudeTopic from './pages/AptitudeTopic';
 import AptitudePractice from './pages/AptitudePractice';
+import AptitudeTests from './pages/AptitudeTests';
+import AptitudeExam from './pages/AptitudeExam';
+import AptitudeResult from './pages/AptitudeResult';
 import AdminMaterials from './pages/AdminMaterials';
 import Hackathons from './pages/Hackathons';
 import HackathonDetail from './pages/HackathonDetail';
@@ -208,6 +211,9 @@ function AppRoutes() {
       <Route path="/aptitude" element={<Aptitude />} />
       <Route path="/aptitude/topics/:slug" element={<AptitudeTopic />} />
       <Route path="/aptitude/practice" element={<AptitudePractice />} />
+      <Route path="/aptitude/tests" element={<AptitudeTests />} />
+      <Route path="/aptitude/exam/:attemptId" element={<AptitudeExam />} />
+      <Route path="/aptitude/results/:attemptId" element={<AptitudeResult />} />
       <Route path="/materials" element={<ProtectedRoute anyRole><Materials /></ProtectedRoute>} />
       <Route path="/materials/:slug" element={<ProtectedRoute anyRole><Materials /></ProtectedRoute>} />
       <Route path="/admin/materials" element={<ProtectedRoute staff="challenge-editor"><AdminToolLayout><AdminMaterials /></AdminToolLayout></ProtectedRoute>} />

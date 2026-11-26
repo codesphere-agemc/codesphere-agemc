@@ -10,10 +10,10 @@ import '../css/Aptitude.css';
 // Quick-access cards. Sections still being built are marked and not clickable.
 const QUICK = [
   { title: 'Practice Questions', text: 'Pick a topic and difficulty, answer, see the solution.', icon: 'bi-ui-checks-grid', to: '/aptitude/practice' },
-  { title: 'Mock Tests', text: 'Timed tests with negative marking, like the real thing.', icon: 'bi-stopwatch', to: null },
+  { title: 'Mock Tests', text: 'Timed tests with negative marking, like the real thing.', icon: 'bi-stopwatch', to: '/aptitude/tests' },
   { title: 'Placement Preparation', text: 'TCS NQT, Infosys, Wipro, Accenture and more.', icon: 'bi-briefcase', to: '#placement' },
   { title: 'Topic-wise Learning', text: '65 topics across 4 categories.', icon: 'bi-grid-3x3-gap', to: '#categories' },
-  { title: 'Previous Tests', text: 'Review every test you have taken.', icon: 'bi-clock-history', to: null },
+  { title: 'Previous Tests', text: 'Review every test you have taken.', icon: 'bi-clock-history', to: '/aptitude/tests#previous' },
   { title: 'Leaderboard', text: 'Weekly and all-time aptitude rankings.', icon: 'bi-bar-chart-steps', to: null },
   { title: 'Daily Challenge', text: 'A fresh set every day. Keep your streak.', icon: 'bi-lightning-charge', to: null },
   { title: 'My Performance', text: 'Accuracy, weak topics and progress charts.', icon: 'bi-graph-up-arrow', to: null },
@@ -165,7 +165,7 @@ export default function Aptitude() {
                       return c && <span key={slug} style={{ '--cat': c.color }}>{c.short}</span>;
                     })}
                   </div>
-                  <em className="apt-soon">Mock tests coming soon</em>
+                  <Link to="/aptitude/tests" className="apt-link small">Mock tests <i className="bi bi-arrow-right" aria-hidden="true" /></Link>
                 </div>
               ))}
             </div>
