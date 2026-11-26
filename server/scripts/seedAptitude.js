@@ -10,7 +10,9 @@ const sampleTests = require('../data/aptitudeTests');
 (async () => {
   try {
     await mongoose.connect(process.env.MONGODB_URI);
-    const questions = prepared();
+    // Questions an editor changed in the admin panel are left alone.
+    const edited = new Set(await AptitudeQuestion.distinct('code', { source: { $ne: 'codesphere' } }));
+    const questions = prepared().filter((q) => !edited.has(q.code));
     const ops = questions.map(({ verify, ...q }) => ({
       updateOne: {
         filter: { code: q.code },
@@ -19,7 +21,7 @@ const sampleTests = require('../data/aptitudeTests');
       },
     }));
     const result = await AptitudeQuestion.bulkWrite(ops, { ordered: false });
-    console.log(`Aptitude questions: ${result.upsertedCount} added, ${result.modifiedCount} updated, ${questions.length} in the bank.`);
+    console.log(`Aptitude questions: ${result.upsertedCount} added, ${result.modifiedCount} updated, ${questions.length} in the bank${edited.size ? `, ${edited.size} edited by admins left as they are` : ''}.`);
 
     // Sample mock tests: content is refreshed, an admin's status choice is kept.
     const tests = await AptitudeTest.bulkWrite(sampleTests.map(({ slug, ...t }) => ({

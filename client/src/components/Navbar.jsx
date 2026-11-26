@@ -143,6 +143,7 @@ const Navbar = () => {
     { role: 'challenge-editor', path: '/admin/reverse-coding', icon: 'bi-arrow-repeat', label: 'Reverse Coding editor' },
     { role: 'challenge-editor', path: '/admin/materials', icon: 'bi-journal-bookmark', label: 'Study Guide editor' },
     { role: 'hackathon-organizer', path: '/admin/hackathons', icon: 'bi-trophy', label: 'Hackathon organizer' },
+    { role: 'aptitude-editor', path: '/admin/aptitude', icon: 'bi-calculator', label: 'Aptitude editor' },
     { role: 'project-reviewer', path: '/admin/projects', icon: 'bi-kanban', label: 'Review projects' },
     { role: 'hackathon-organizer', path: '/admin/results', icon: 'bi-clipboard-data', label: 'Publish results' },
     { role: 'hackathon-organizer', path: '/admin/review', icon: 'bi-inbox', label: 'Review hosted hackathons' },
