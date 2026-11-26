@@ -4,6 +4,7 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { apiRequest } from '../lib/api';
 import { DIFFICULTY, formatDuration } from '../lib/aptitude';
+import AptitudeResources from '../components/AptitudeResources';
 import '../css/Aptitude.css';
 
 // One aptitude topic: how many questions at each difficulty, and its siblings.
@@ -68,6 +69,13 @@ export default function AptitudeTopic() {
                 <div className="apt-callout">
                   <i className="bi bi-info-circle" aria-hidden="true" />
                   <span>Questions for this topic are being written. Each comes with a hint, a step-by-step solution and a shortcut.</span>
+                </div>
+              )}
+              {data.resources?.length > 0 && (
+                <div className="apt-res-block">
+                  <h2>Learn more elsewhere</h2>
+                  <p className="apt-muted small">More practice and notes on {t.name} from other free sites. Opens in a new tab.</p>
+                  <AptitudeResources links={data.resources} />
                 </div>
               )}
             </section>

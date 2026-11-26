@@ -5,6 +5,7 @@ import Footer from '../components/Footer';
 import { useAuth } from '../context/AuthContext';
 import { apiRequest } from '../lib/api';
 import { formatDuration } from '../lib/aptitude';
+import AptitudeResources from '../components/AptitudeResources';
 import '../css/Aptitude.css';
 
 // Quick-access cards. Sections still being built are marked and not clickable.
@@ -172,10 +173,32 @@ export default function Aptitude() {
                     })}
                   </div>
                   <Link to="/aptitude/tests" className="apt-link small">Mock tests <i className="bi bi-arrow-right" aria-hidden="true" /></Link>
+                  {t.resources?.length > 0 && <AptitudeResources links={t.resources} compact />}
                 </div>
               ))}
             </div>
           </section>
+
+          {catalog?.resources && (
+            <section id="resources" className="apt-section">
+              <div className="apt-section-head">
+                <h2>Learn more elsewhere</h2>
+                <p className="apt-muted">Free sites we recommend for extra practice. Each topic page also links straight to that topic on these sites.</p>
+              </div>
+              <div className="apt-res-grid">
+                {catalog.categories.map((c) => (
+                  <div key={c.slug} className="apt-res-col" style={{ '--cat': c.color }}>
+                    <h3>{c.name}</h3>
+                    <AptitudeResources links={c.resources} compact />
+                  </div>
+                ))}
+                <div className="apt-res-col">
+                  <h3>Mock tests, puzzles and videos</h3>
+                  <AptitudeResources links={catalog.resources} compact />
+                </div>
+              </div>
+            </section>
+          )}
         </div>
       </main>
       <Footer />

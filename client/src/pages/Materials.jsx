@@ -7,7 +7,7 @@ import { apiRequest } from '../lib/api';
 import { formatDate } from '../lib/time';
 import '../css/Materials.css';
 
-// The 239-link library is loaded only when its tab is opened.
+// The 251-link library is loaded only when its tab is opened.
 const ResourceLibrary = lazy(() => import('../components/ResourceLibrary'));
 
 const KIND_ICONS = { docs: 'bi-book', video: 'bi-play-btn', article: 'bi-file-text', practice: 'bi-controller', course: 'bi-mortarboard' };

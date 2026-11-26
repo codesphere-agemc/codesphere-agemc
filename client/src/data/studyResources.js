@@ -1,4 +1,4 @@
-// CodeSphere Study Guide resource library (239 external links), merged from the club's
+// CodeSphere Study Guide resource library (251 external links), merged from the club's
 // Structure.html and CodeSphere Study Guide documents. Generated data: edit the source documents
 // and regenerate rather than hand-editing ids (ids are stable and used for saved resources).
 
@@ -23,11 +23,12 @@ export const CATEGORIES = [
   { "id": "18", "name": "GitHub Repos & Curated Lists", "sub": "High-value repositories", "note": "" },
   { "id": "19", "name": "Practice Platforms", "sub": "Judges, kata, challenges", "note": "" },
   { "id": "20", "name": "Project Ideas", "sub": "Beginner to advanced briefs", "note": "" },
+  { "id": "21", "name": "Aptitude & Placements", "sub": "Quant, reasoning, verbal, company tests", "note": "Use outside sites to practise more, but check answers you are unsure about: free question banks sometimes have wrong keys." },
 ];
 
 export const GROUPS = [
   { "id": "g1", "name": "Get started", "catIds": [ "01", "02", "04" ] },
-  { "id": "g2", "name": "Core computer science", "catIds": [ "05", "09", "19" ] },
+  { "id": "g2", "name": "Core computer science", "catIds": [ "05", "09", "19", "21" ] },
   { "id": "g3", "name": "Build software", "catIds": [ "06", "07", "08", "14", "15", "16", "17" ] },
   { "id": "g4", "name": "AI & data", "catIds": [ "10", "11" ] },
   { "id": "g5", "name": "Cloud & security", "catIds": [ "12", "13" ] },
@@ -294,4 +295,16 @@ export const RESOURCES = [
   { "id": 237, "title": "ML experiment tracker", "url": "https://mlflow.org/docs/latest/", "cat": "20", "levels": [ "advanced" ], "levelLabel": "Advanced", "format": "Project brief", "kind": "web", "cost": "Free", "desc": "Track model parameters, metrics, artifacts, and reproducible runs." },
   { "id": 238, "title": "Containerized API with CI", "url": "https://docs.docker.com/get-started/", "cat": "20", "levels": [ "advanced" ], "levelLabel": "Advanced", "format": "Project brief", "kind": "web", "cost": "Free", "desc": "Build an API, add tests, containerize it, and run tests/builds through CI." },
   { "id": 239, "title": "Open-source starter contribution", "url": "https://github.com/firstcontributions/first-contributions", "cat": "20", "levels": [ "beginner", "intermediate", "advanced" ], "levelLabel": "Beginner → Advanced", "format": "Project brief", "kind": "github", "cost": "Free", "desc": "Make a documentation or bug-fix contribution in an external repo after following its rules." },
+  { "id":  240, "title":  "CodeSphere Aptitude", "url":  "/aptitude", "cat":  "21", "levels":  ["beginner", "intermediate", "advanced"], "levelLabel":  "Beginner → Advanced", "format":  "Practice, mock tests, daily challenge", "kind":  "web", "cost":  "Free", "desc":  "The club's own aptitude section: topic-wise practice with step-by-step solutions, timed mock tests, a daily challenge, progress charts and a mistake notebook." },
+  { "id":  241, "title":  "IndiaBix — Quantitative Aptitude", "url":  "https://www.indiabix.com/aptitude/questions-and-answers/", "cat":  "21", "levels":  ["beginner", "intermediate"], "levelLabel":  "Beginner → Intermediate", "format":  "Practice questions", "kind":  "web", "cost":  "Free", "desc":  "Large topic-wise question sets with explanations: percentages, profit and loss, time and work, trains, probability and more." },
+  { "id":  242, "title":  "IndiaBix — Logical & Verbal Reasoning", "url":  "https://www.indiabix.com/logical-reasoning/questions-and-answers/", "cat":  "21", "levels":  ["beginner", "intermediate"], "levelLabel":  "Beginner → Intermediate", "format":  "Practice questions", "kind":  "web", "cost":  "Free", "desc":  "Series, syllogisms, statements and assumptions, blood relations, directions and seating arrangements." },
+  { "id":  243, "title":  "IndiaBix — Verbal Ability", "url":  "https://www.indiabix.com/verbal-ability/questions-and-answers/", "cat":  "21", "levels":  ["beginner", "intermediate"], "levelLabel":  "Beginner → Intermediate", "format":  "Practice questions", "kind":  "web", "cost":  "Free", "desc":  "Synonyms, antonyms, error spotting, sentence correction, para jumbles, idioms and comprehension." },
+  { "id":  244, "title":  "IndiaBix — Data Interpretation", "url":  "https://www.indiabix.com/data-interpretation/questions-and-answers/", "cat":  "21", "levels":  ["beginner", "intermediate"], "levelLabel":  "Beginner → Intermediate", "format":  "Practice questions", "kind":  "web", "cost":  "Free", "desc":  "Table, bar, pie and line chart sets, the way they appear in placement tests." },
+  { "id":  245, "title":  "GeeksforGeeks — Aptitude", "url":  "https://www.geeksforgeeks.org/aptitude/aptitude-questions-and-answers/", "cat":  "21", "levels":  ["beginner", "intermediate", "advanced"], "levelLabel":  "Beginner → Advanced", "format":  "Notes and solved questions", "kind":  "web", "cost":  "Free", "desc":  "Formula notes, shortcuts and solved questions for quant, reasoning and verbal, plus interview puzzles." },
+  { "id":  246, "title":  "GeeksforGeeks — Top interview puzzles", "url":  "https://www.geeksforgeeks.org/aptitude/top-100-puzzles-asked-in-interviews/", "cat":  "21", "levels":  ["intermediate", "advanced"], "levelLabel":  "Intermediate → Advanced", "format":  "Puzzles", "kind":  "web", "cost":  "Free", "desc":  "Classic puzzles asked in tech interviews, each with a worked solution." },
+  { "id":  247, "title":  "PrepInsta — Company-wise preparation", "url":  "https://prepinsta.com/tcs-nqt/", "cat":  "21", "levels":  ["beginner", "intermediate"], "levelLabel":  "Beginner → Intermediate", "format":  "Exam patterns, previous papers", "kind":  "web", "cost":  "Freemium", "desc":  "Test patterns and practice for TCS NQT, Infosys, Wipro, Accenture, Cognizant, Capgemini and Deloitte. Many pages are free; some courses are paid." },
+  { "id":  248, "title":  "m4maths", "url":  "https://m4maths.com/", "cat":  "21", "levels":  ["intermediate"], "levelLabel":  "Intermediate", "format":  "Community questions", "kind":  "web", "cost":  "Free", "desc":  "Aptitude and puzzle questions shared by students after real placement tests, with discussion." },
+  { "id":  249, "title":  "CareerRide — Online aptitude tests", "url":  "https://www.careerride.com/online-aptitude-test.aspx", "cat":  "21", "levels":  ["beginner", "intermediate"], "levelLabel":  "Beginner → Intermediate", "format":  "Timed tests", "kind":  "web", "cost":  "Free", "desc":  "Short timed tests to check speed and accuracy across aptitude areas." },
+  { "id":  250, "title":  "Feel Free to Learn", "url":  "https://www.youtube.com/@FeelFreetoLearn", "cat":  "21", "levels":  ["beginner", "intermediate"], "levelLabel":  "Beginner → Intermediate", "format":  "Video lessons", "kind":  "video", "cost":  "Free", "desc":  "Topic-by-topic aptitude videos with shortcuts and placement examples." },
+  { "id":  251, "title":  "Aptitude Cracker", "url":  "https://www.youtube.com/@AptitudeCracker", "cat":  "21", "levels":  ["beginner", "intermediate"], "levelLabel":  "Beginner → Intermediate", "format":  "Video lessons", "kind":  "video", "cost":  "Free", "desc":  "Walkthroughs of placement-paper questions, topic by topic." },
 ];

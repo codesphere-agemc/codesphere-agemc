@@ -6,6 +6,7 @@ const { CATEGORIES, PLACEMENT_TRACKS, DIFFICULTIES, topicIndex } = require('../d
 const { AptitudeQuestion, AptitudeAttempt, AptitudeProgress } = require('../models/Aptitude');
 const { protect } = require('../middleware/authMiddleware');
 const { dateInIndia, shiftDate } = require('../utils/progress');
+const resources = require('../data/aptitudeResources');
 const { syncBadges } = require('../utils/badges');
 
 // Badges newly earned by a student; never fails the request that triggered it.
@@ -89,9 +90,10 @@ router.get('/catalog', async (req, res) => {
   res.json({
     categories: CATEGORIES.map((c) => {
       const topics = c.topics.map((t) => ({ ...t, questions: byTopic.get(t.slug)?.total || 0, byDifficulty: byTopic.get(t.slug) || {} }));
-      return { ...c, topics, questions: topics.reduce((sum, t) => sum + t.questions, 0) };
+      return { ...c, topics, questions: topics.reduce((sum, t) => sum + t.questions, 0), resources: resources.categoryLinks(c.slug) };
     }),
-    tracks: PLACEMENT_TRACKS,
+    tracks: PLACEMENT_TRACKS.map((t) => ({ ...t, resources: resources.trackLinks(t.slug) })),
+    resources: resources.generalLinks(),
     difficulties: DIFFICULTIES,
   });
 });
@@ -116,6 +118,7 @@ router.get('/topics/:slug', async (req, res) => {
       avgSeconds: rows.length ? Math.round(rows.reduce((s, r) => s + r.avgSeconds * r.n, 0) / rows.reduce((s, r) => s + r.n, 0)) : 0,
     },
     siblings: category.topics.map((t) => ({ slug: t.slug, name: t.name })),
+    resources: resources.topicLinks(topic.slug),
   });
 });
 
