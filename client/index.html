@@ -26,6 +26,19 @@
     />
     <meta name="twitter:image" content="https://codesphereagemc.vercel.app/email-logo.png" />
     <title>CodeSphere - AGEMC</title>
+    <script>
+      if (typeof globalThis.Iterator === 'undefined') {
+        globalThis.Iterator = function () {};
+        globalThis.Iterator.prototype = Object.getPrototypeOf(
+          Object.getPrototypeOf([][Symbol.iterator]())
+        );
+      }
+      if (typeof globalThis.Iterator.prototype.join !== 'function') {
+        globalThis.Iterator.prototype.join = function (separator) {
+          return [...this].join(separator);
+        };
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>
