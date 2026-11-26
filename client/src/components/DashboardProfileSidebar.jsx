@@ -12,6 +12,7 @@ export default function DashboardProfileSidebar({
   defaultBanner = '/default-profile-banner.webp',
   showBadges = false,
   showLeaderboard = false,
+  showCompleteButton = false,
 }) {
   const name = user?.name || 'Member';
   const username = user?.username;
@@ -93,6 +94,12 @@ export default function DashboardProfileSidebar({
           </div>
 
           <p>A complete profile helps the community discover your work.</p>
+
+          {showCompleteButton && (
+            <Link to="/user/profile" className="profile-complete-action-button">
+              Complete Profile <i className="bi bi-arrow-right" aria-hidden="true" />
+            </Link>
+          )}
         </section>
       )}
 
