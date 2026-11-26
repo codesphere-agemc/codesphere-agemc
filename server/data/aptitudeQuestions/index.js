@@ -6,8 +6,9 @@ const batch2 = require('./batch2');
 // Curated from a 100k template set: broken, mislabelled and repeated questions removed,
 // at most 40 per topic. See docs/aptitude.md.
 const batch3 = require('./batch3.json');
+const batch4 = require('./batch4');
 
-const ALL = [...batch1, ...batch2, ...batch3];
+const ALL = [...batch1, ...batch2, ...batch3, ...batch4];
 
 function seededShuffle(items, seedText) {
   let seed = 0;
