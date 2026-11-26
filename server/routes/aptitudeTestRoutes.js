@@ -7,6 +7,7 @@ const mongoose = require('mongoose');
 const { topicIndex } = require('../data/aptitudeTopics');
 const { AptitudeQuestion, AptitudeTest, AptitudeTestAttempt, AptitudeProgress } = require('../models/Aptitude');
 const { protect, optionalAuth } = require('../middleware/authMiddleware');
+const { newBadgesFor } = require('./aptitudeRoutes');
 
 const router = express.Router();
 const isId = (id) => mongoose.Types.ObjectId.isValid(id);
@@ -307,7 +308,7 @@ router.post('/attempts/:id/submit', protect, async (req, res) => {
   const attempt = await ownAttempt(req, res);
   if (!attempt) return;
   const done = await finalize(attempt, 'submitted');
-  res.json({ result: await resultView(done) });
+  res.json({ result: await resultView(done), badges: await newBadgesFor(req.user._id) });
 });
 
 router.get('/:slug', optionalAuth, async (req, res) => {

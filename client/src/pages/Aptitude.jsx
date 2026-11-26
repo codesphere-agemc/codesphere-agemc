@@ -14,8 +14,8 @@ const QUICK = [
   { title: 'Placement Preparation', text: 'TCS NQT, Infosys, Wipro, Accenture and more.', icon: 'bi-briefcase', to: '#placement' },
   { title: 'Topic-wise Learning', text: '65 topics across 4 categories.', icon: 'bi-grid-3x3-gap', to: '#categories' },
   { title: 'Previous Tests', text: 'Review every test you have taken.', icon: 'bi-clock-history', to: '/aptitude/tests#previous' },
-  { title: 'Leaderboard', text: 'Weekly and all-time aptitude rankings.', icon: 'bi-bar-chart-steps', to: null },
-  { title: 'Daily Challenge', text: 'A fresh set every day. Keep your streak.', icon: 'bi-lightning-charge', to: null },
+  { title: 'Leaderboard', text: 'Weekly and all-time aptitude rankings.', icon: 'bi-bar-chart-steps', to: '/aptitude/leaderboard' },
+  { title: 'Daily Challenge', text: 'A fresh set every day. Keep your streak.', icon: 'bi-lightning-charge', to: '/aptitude/daily' },
   { title: 'My Performance', text: 'Accuracy, weak topics and progress charts.', icon: 'bi-graph-up-arrow', to: '/aptitude/progress' },
 ];
 

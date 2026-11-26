@@ -6,6 +6,17 @@ const { CATEGORIES, PLACEMENT_TRACKS, DIFFICULTIES, topicIndex } = require('../d
 const { AptitudeQuestion, AptitudeAttempt, AptitudeProgress } = require('../models/Aptitude');
 const { protect } = require('../middleware/authMiddleware');
 const { dateInIndia, shiftDate } = require('../utils/progress');
+const { syncBadges } = require('../utils/badges');
+
+// Badges newly earned by a student; never fails the request that triggered it.
+async function newBadgesFor(userId) {
+  try {
+    const { newBadges } = await syncBadges(userId);
+    return (newBadges || []).map((b) => ({ id: b.id, name: b.name, emoji: b.emoji }));
+  } catch {
+    return [];
+  }
+}
 
 const router = express.Router();
 
@@ -346,9 +357,12 @@ router.post('/questions/:id/answer', protect, async (req, res) => {
     streak: after.streak,
     answeredToday: after.answeredToday,
     goals: DAILY_GOALS.map((g) => ({ ...g, done: after.answeredToday >= g.count })),
+    badges: correct ? await newBadgesFor(userId) : [],
   });
 });
 
 module.exports = router;
 module.exports.summaryFor = summaryFor;
 module.exports.liveStreak = liveStreak;
+module.exports.afterAnswer = afterAnswer;
+module.exports.newBadgesFor = newBadgesFor;

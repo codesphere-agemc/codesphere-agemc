@@ -55,3 +55,36 @@ async function forumSummary(userIds) {
 }
 
 module.exports = { reverseSummary, forumSummary };
+
+/**
+ * Map userId → { xp, solved, bestStreak, tests, dailies } from Aptitude.
+ * XP = practice XP + bonuses (goals, streaks, mock tests, daily challenges).
+ */
+async function aptitudeSummary(userIds) {
+  const { AptitudeAttempt, AptitudeProgress, AptitudeTestAttempt, AptitudeDailyAttempt } = require('../models/Aptitude');
+  const ids = toIds(userIds);
+  const match = ids ? { user: { $in: ids } } : {};
+  const [attempts, progress, tests, dailies] = await Promise.all([
+    AptitudeAttempt.aggregate([
+      { $match: match },
+      { $group: { _id: { user: '$user', q: '$question' }, xp: { $sum: '$xp' }, solved: { $max: { $cond: ['$correct', 1, 0] } } } },
+      { $group: { _id: '$_id.user', xp: { $sum: '$xp' }, solved: { $sum: '$solved' } } },
+    ]),
+    AptitudeProgress.find(match).select('user bonusXp bestStreak').lean(),
+    AptitudeTestAttempt.aggregate([{ $match: { ...match, status: { $ne: 'in-progress' } } }, { $group: { _id: '$user', n: { $sum: 1 } } }]),
+    AptitudeDailyAttempt.aggregate([{ $match: { ...match, submittedAt: { $ne: null } } }, { $group: { _id: '$user', n: { $sum: 1 }, perfect: { $sum: { $cond: [{ $eq: ['$correctCount', { $size: '$answers' }] }, 1, 0] } } } }]),
+  ]);
+  const out = new Map();
+  const get = (id) => {
+    const key = String(id);
+    if (!out.has(key)) out.set(key, { xp: 0, solved: 0, bestStreak: 0, tests: 0, dailies: 0, perfectDailies: 0 });
+    return out.get(key);
+  };
+  attempts.forEach((r) => Object.assign(get(r._id), { xp: get(r._id).xp + r.xp, solved: r.solved }));
+  progress.forEach((p) => { const s = get(p.user); s.xp += p.bonusXp || 0; s.bestStreak = p.bestStreak || 0; });
+  tests.forEach((r) => { get(r._id).tests = r.n; });
+  dailies.forEach((r) => { Object.assign(get(r._id), { dailies: r.n, perfectDailies: r.perfect }); });
+  return out;
+}
+
+module.exports.aptitudeSummary = aptitudeSummary;

@@ -117,7 +117,8 @@ export default function AptitudePractice() {
       });
       patch(question.id, { result: r, busy: false });
       setList((l) => ({ ...l, questions: l.questions.map((x) => (x.id === question.id ? { ...x, state: r.correct || x.state === 'correct' ? 'correct' : 'wrong' } : x)) }));
-      if (r.rewards?.length) flash(r.rewards.map((w) => `🎉 ${w.label}: +${w.xp} XP`).join('  ·  '));
+      const notes = [...(r.rewards || []).map((w) => `🎉 ${w.label}: +${w.xp} XP`), ...(r.badges || []).map((b) => `${b.emoji} New badge: ${b.name}`)];
+      if (notes.length) flash(notes.join('  ·  '));
     } catch (e) {
       patch(question.id, { busy: false });
       flash(e.message);

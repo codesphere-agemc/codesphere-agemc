@@ -19,13 +19,14 @@ const BADGE_GROUPS = [
   { id: 'growth', label: 'Growth', icon: 'bi-graph-up-arrow' },
   { id: 'events', label: 'Events', icon: 'bi-calendar-event' },
   { id: 'reverse', label: 'Reverse Coding', icon: 'bi-arrow-repeat' },
+  { id: 'aptitude', label: 'Aptitude', icon: 'bi-calculator' },
   { id: 'opensource', label: 'Open source', icon: 'bi-github' },
   { id: 'community', label: 'Community', icon: 'bi-people' },
 ];
 
 const BADGES = [
   // Getting started
-  { id: 'first-step', group: 'start', emoji: '🌱', name: 'First Step', type: 'auto', metric: 'xp', target: 1, how: 'Earn your first XP: fix a daily bug or solve a challenge.' },
+  { id: 'first-step', group: 'start', emoji: '🌱', name: 'First Step', type: 'auto', metric: 'xp', target: 1, how: 'Earn your first XP: fix a daily bug, solve a challenge or answer an aptitude question.' },
   { id: 'identity', group: 'start', emoji: '🪪', name: 'Identity', type: 'self', metric: 'profileComplete', target: 1, how: 'Complete your profile to 100%.' },
 
   // Debugging Arena (tiers)
@@ -73,6 +74,15 @@ const BADGES = [
   { id: 'reverse-engineer', group: 'reverse', emoji: '🔄', name: 'Reverse Engineer', tier: 'bronze', type: 'auto', metric: 'reverseSolved', target: 1, how: 'Solve your first Reverse Coding challenge.' },
   { id: 'code-archaeologist', group: 'reverse', emoji: '🧬', name: 'Code Archaeologist', tier: 'silver', type: 'auto', metric: 'reverseSolved', target: 5, how: 'Solve 5 Reverse Coding challenges.' },
   { id: 'master-reconstructor', group: 'reverse', emoji: '🏛️', name: 'Master Reconstructor', tier: 'gold', type: 'auto', metric: 'reverseSolved', target: 10, how: 'Solve 10 Reverse Coding challenges.' },
+
+  // Aptitude (practice, mock tests and daily challenges, checked by the server)
+  { id: 'number-cruncher', group: 'aptitude', emoji: '🧮', name: 'Number Cruncher', tier: 'bronze', type: 'auto', metric: 'aptitudeSolved', target: 25, how: 'Solve 25 aptitude questions correctly.' },
+  { id: 'aptitude-ace', group: 'aptitude', emoji: '🎯', name: 'Aptitude Ace', tier: 'silver', type: 'auto', metric: 'aptitudeSolved', target: 100, how: 'Solve 100 aptitude questions correctly.' },
+  { id: 'aptitude-pro', group: 'aptitude', emoji: '🧠', name: 'Aptitude Pro', tier: 'gold', type: 'auto', metric: 'aptitudeSolved', target: 250, how: 'Solve 250 aptitude questions correctly.' },
+  { id: 'mock-warrior', group: 'aptitude', emoji: '⏱️', name: 'Mock Warrior', tier: 'bronze', type: 'auto', metric: 'aptitudeTests', target: 5, how: 'Complete 5 aptitude mock tests.' },
+  { id: 'daily-solver', group: 'aptitude', emoji: '☀️', name: 'Daily Solver', tier: 'bronze', type: 'auto', metric: 'aptitudeDailies', target: 7, how: 'Finish 7 daily aptitude challenges.' },
+  { id: 'perfect-day', group: 'aptitude', emoji: '💯', name: 'Perfect Day', tier: 'silver', type: 'auto', metric: 'aptitudePerfectDailies', target: 1, how: 'Get every question right in a daily aptitude challenge.' },
+  { id: 'aptitude-streak', group: 'aptitude', emoji: '🔥', name: 'Aptitude Streak', tier: 'gold', type: 'auto', metric: 'aptitudeBestStreak', target: 14, how: 'Practise aptitude 14 days in a row.' },
 
   // Open source (not tracked yet)
   { id: 'first-merge', group: 'opensource', emoji: '🌟', name: 'First Merge', type: 'coming-soon', how: 'Get your first pull request merged into CodeSphere.' },

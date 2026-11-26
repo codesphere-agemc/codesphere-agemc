@@ -172,6 +172,7 @@ const dailyAttemptSchema = new Schema(
     correctCount: { type: Number, default: 0 },
     seconds: Number,
     xp: { type: Number, default: 0 },
+    late: { type: Boolean, default: false }, // submitted after time ran out: no XP
   },
   { timestamps: true },
 );
