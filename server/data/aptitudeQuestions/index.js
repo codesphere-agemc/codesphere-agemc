@@ -2,8 +2,9 @@
 // fixed way per question code, so the correct answer isn't always "A" but a
 // re-seed never moves it.
 const batch1 = require('./batch1');
+const batch2 = require('./batch2');
 
-const ALL = [...batch1];
+const ALL = [...batch1, ...batch2];
 
 function seededShuffle(items, seedText) {
   let seed = 0;
