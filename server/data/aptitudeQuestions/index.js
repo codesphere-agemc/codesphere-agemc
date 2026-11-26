@@ -3,8 +3,11 @@
 // re-seed never moves it.
 const batch1 = require('./batch1');
 const batch2 = require('./batch2');
+// Curated from a 100k template set: broken, mislabelled and repeated questions removed,
+// at most 40 per topic. See docs/aptitude.md.
+const batch3 = require('./batch3.json');
 
-const ALL = [...batch1, ...batch2];
+const ALL = [...batch1, ...batch2, ...batch3];
 
 function seededShuffle(items, seedText) {
   let seed = 0;

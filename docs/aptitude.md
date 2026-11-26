@@ -64,7 +64,7 @@ Guests can browse the dashboard, topics, test list, daily challenge summary and 
 | File | Role |
 |---|---|
 | `data/aptitudeTopics.js` | The 4 categories and 65 topics, placement tracks and difficulty levels. Topic slugs are the keys used everywhere. |
-| `data/aptitudeQuestions/` | The built-in question bank (`batch1.js`, `batch2.js`). `index.js` shuffles option order per question, so the correct answer isn't always A. |
+| `data/aptitudeQuestions/` | The built-in question bank (`batch1.js`, `batch2.js`, `batch3.json`). `batch3.json` is a curated 1,268-question selection from a 100,000-question template set: repeats, mislabelled questions and wrong answers were removed, every computable answer was recomputed, and each topic is capped at 40. `index.js` shuffles option order per question, so the correct answer isn't always A. |
 | `data/aptitudeTests.js` | The 4 sample mock tests loaded by the seed script. |
 | `models/Aptitude.js` | All aptitude collections (below). |
 | `routes/aptitudeRoutes.js` | Catalog, topics, dashboard summary, practice, hints, reveal, bookmarks, answering, streaks and daily goals. |
@@ -138,7 +138,7 @@ New questions from the panel or import start as **draft**, so nothing reaches st
 
 ## Known limitations
 
-- **Question bank size.** 198 questions so far (89 quantitative, 76 logical, 23 verbal, 10 data interpretation), against a target of about 350. Verbal and data interpretation are the thinnest, and some topics have none yet; the admin *Overview* tab lists them.
+- **Question bank size and variety.** 1,466 questions (773 quantitative, 321 logical, 106 verbal, 266 data interpretation). Many batch 3 questions are number-swapped versions of the same template, and their difficulty labels are rough. Verbal is still thin, and several reasoning and verbal topics (syllogism, blood relations, para jumbles, statements, grammar) have only a handful of distinct questions. Partnership, mixtures and number series got nothing from batch 3 because all of its questions on those topics were broken.
 - **Data interpretation** questions are text tables only. There are no chart images in questions yet.
 - **Tests are multiple choice only.** No numeric-entry questions.
 - **Badges earned in a mock test** are saved, but the test result page doesn't announce them.

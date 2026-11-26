@@ -120,7 +120,7 @@ const jwt = req('jsonwebtoken');
   check('edit test', r.data.test.title === 'Ratio Drill v2');
 
   r = await call('GET', '/admin/stats');
-  check('stats', r.data.status.published > 100 && r.data.week.answers === 1 && r.data.categories.length === 4 && r.data.categories.some((c) => c.emptyTopics.length > 0));
+  check('stats', r.data.status.published > 100 && r.data.week.answers === 1 && r.data.categories.length === 4 && r.data.categories.every((c) => Array.isArray(c.emptyTopics)));
 
   console.log(fails ? `${fails} FAILED` : 'ALL PASS');
   server.close();

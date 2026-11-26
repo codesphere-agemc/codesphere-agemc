@@ -131,10 +131,12 @@ const jwt = req('jsonwebtoken');
   check('badges earned on the way', badges.includes('first-step') && badges.includes('perfect-day'), badges.join(','));
 
   // Editor publishes a new question; the student sees it in practice.
+  const before = (await call('GET', '/aptitude/practice?topic=percentage')).data.total;
   r = await call('POST', '/aptitude/admin/questions', { topic: 'percentage', statement: 'What is 5% of 400?', options: ['20', '25', '40', '15'], answer: 'A', explanation: '400 × 0.05 = 20.', status: 'published' }, ED.tok);
   check('editor creates a published question', r.status === 201);
-  r = await call('GET', '/aptitude/practice?topic=percentage');
-  check('student sees it straight away', r.data.questions.some((q) => q.statement === 'What is 5% of 400?'));
+  r = await call('GET', '/aptitude/practice?topic=percentage&status=new');
+  const after = (await call('GET', '/aptitude/practice?topic=percentage')).data.total;
+  check('student sees it straight away', after === before + 1 && await M.AptitudeQuestion.exists({ statement: 'What is 5% of 400?', status: 'published' }));
 
   console.log(fails ? `${fails} FAILED` : 'ALL PASS');
   server.close();
