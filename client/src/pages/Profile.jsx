@@ -12,12 +12,22 @@ import MyProjectsSection from '../components/MyProjectsSection';
 import '../css/Profile.css';
 import { calculateProfileCompletion } from '../lib/profileCompletion';
 
-import * as pdfjsLib from 'pdfjs-dist';
-import pdfWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 import ProfileBadges from '../components/ProfileBadges';
 import { parseResumeText as parseResume, itemsToLines } from '../lib/resumeParser';
 
-pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
+let pdfjsPromise = null;
+const loadPdfJs = () => {
+  if (!pdfjsPromise) {
+    pdfjsPromise = Promise.all([
+      import('pdfjs-dist'),
+      import('pdfjs-dist/build/pdf.worker.min.mjs?url'),
+    ]).then(([pdfjsLib, { default: pdfWorker }]) => {
+      pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
+      return pdfjsLib;
+    });
+  }
+  return pdfjsPromise;
+};
 
 const previewUser = {
   name: 'Alex Morgan',
@@ -247,6 +257,7 @@ async function recognizeCanvas(canvas, onProgress) {
 
 const extractResumeText = async (file, onProgress) => {
   if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
+    const pdfjsLib = await loadPdfJs();
     const buffer = await file.arrayBuffer();
 
     const pdf = await pdfjsLib.getDocument({
