@@ -60,6 +60,10 @@
 
 .dashboard-overview-badges-block .bdg-section {
   margin-bottom: 0;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+  background: transparent;
 }
 
 /* Sidebar scrollable Leaderboard section */
@@ -106,15 +110,30 @@
 }
 
 /* =========================================
-   RESPONSIVE ORDER FOR OVERVIEW
-   (Coding at a glance before profile completion on small screens)
+   OVERVIEW LAYOUT & RESPONSIVE ORDER
    ========================================= */
 
-@media (max-width: 900px) {
+.dashboard-overview-layout {
+  grid-template-columns: minmax(280px, 320px) minmax(0, 1fr);
+  gap: 22px;
+}
+
+.dashboard-overview-content {
+  min-width: 0;
+}
+
+@media (max-width: 1240px) {
+  .dashboard-overview-layout {
+    grid-template-columns: 290px minmax(0, 1fr);
+    gap: 18px;
+  }
+}
+
+@media (max-width: 1080px) {
   .dashboard-overview-layout {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 18px;
   }
 
   .dashboard-overview-layout .student-profile-sidebar {
@@ -123,6 +142,7 @@
 
   .dashboard-overview-layout .student-identity-card {
     order: 1;
+    width: 100%;
   }
 
   .dashboard-overview-layout .student-profile-main {
@@ -132,18 +152,22 @@
 
   .dashboard-overview-layout .student-profile-main > .coding-stats-card {
     order: 2;
+    width: 100%;
   }
 
   .dashboard-overview-layout .profile-completion-card {
     order: 3;
+    width: 100%;
   }
 
   .dashboard-overview-layout .profile-sidebar-leaderboard-card {
     order: 4;
+    width: 100%;
   }
 
   .dashboard-overview-layout .dashboard-overview-badges-block {
     order: 5;
+    width: 100%;
   }
 }
 
@@ -949,6 +973,12 @@
   }
 }
 
+@media (max-width: 1100px) {
+  .user-dashboard-container {
+    padding: 28px 24px 45px;
+  }
+}
+
 @media (max-width: 820px) {
   .user-dashboard-page {
     display: block;
@@ -1030,14 +1060,24 @@
   }
 }
 
-@media (max-width: 360px) {
+@media (max-width: 400px) {
+  .user-dashboard-container {
+    padding: 16px 12px 30px;
+  }
+
   .user-dashboard-mobile-nav {
-    padding-right: 4px;
-    padding-left: 4px;
+    padding: 5px 2px calc(5px + env(safe-area-inset-bottom));
+    gap: 2px;
   }
 
   .user-dashboard-mobile-item {
-    font-size: 8px;
+    padding: 4px 1px;
+    font-size: 8.5px;
+    gap: 3px;
+  }
+
+  .user-dashboard-mobile-item i {
+    font-size: 16px;
   }
 }
 
@@ -1048,6 +1088,31 @@
 
   .user-dashboard-container {
     padding: 20px 15px 35px;
+  }
+
+  .dashboard-overview-layout {
+    gap: 14px;
+  }
+
+  .dashboard-overview-badges-block {
+    padding: 16px 14px;
+    border-radius: 14px;
+  }
+
+  .dashboard-overview-badges-header {
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+
+  .dashboard-overview-badges-icon {
+    width: 36px;
+    height: 36px;
+    font-size: 1.1rem;
+    border-radius: 10px;
+  }
+
+  .dashboard-overview-badges-header h2 {
+    font-size: 1.05rem;
   }
 
   .dashboard-page-heading {
