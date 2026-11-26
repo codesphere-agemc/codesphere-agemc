@@ -281,7 +281,7 @@ export default function ProfileBadges({
         <button type="button" className="bdg-compact-bar" onClick={() => setExpanded(true)} aria-expanded="false">
           <span className="bdg-compact-emoji" aria-hidden="true">{level.emoji}</span>
           <span className="bdg-compact-main">
-            <span className="bdg-kicker">CODESPHERE PROFILE</span>
+            <span className="bdg-kicker">PROFILE PROGRESS</span>
             <strong id="bdg-title">{level.name}</strong>
             <span className="bdg-bar" aria-hidden="true"><span style={{ width: `${Math.round(level.progress * 100)}%` }} /></span>
           </span>
@@ -308,7 +308,7 @@ export default function ProfileBadges({
         <div className="bdg-level">
           <span className="bdg-level-emoji" aria-hidden="true">{level.emoji}</span>
           <div>
-            <span className="bdg-kicker">CODESPHERE PROFILE</span>
+            <span className="bdg-kicker">PROFILE PROGRESS</span>
             <h2 id="bdg-title">{level.name}</h2>
             <div className="bdg-xp">
               <span className="bdg-bar bdg-bar-lg" aria-hidden="true">

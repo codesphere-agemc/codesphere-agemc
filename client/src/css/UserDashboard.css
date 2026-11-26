@@ -66,6 +66,32 @@
   background: transparent;
 }
 
+/* Profile completion button in Overview sidebar */
+.profile-completion-card .profile-complete-action-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  margin-top: 14px;
+  padding: 10px 16px;
+  border-radius: 10px;
+  background: var(--user-primary, #e34d30);
+  color: #ffffff;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(227, 77, 48, 0.2);
+}
+
+.profile-completion-card .profile-complete-action-button:hover {
+  background: var(--user-primary-dark, #c83c23);
+  color: #ffffff;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(227, 77, 48, 0.25);
+}
+
 /* Sidebar scrollable Leaderboard section */
 .profile-sidebar-leaderboard-card {
   padding: 0 !important;

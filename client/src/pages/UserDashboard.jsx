@@ -147,7 +147,13 @@ function DashboardOverviewSection({ user }) {
         </section>
       ) : (
         <div className="student-profile-layout dashboard-section-layout dashboard-overview-layout">
-          <DashboardProfileSidebar user={profile} completion={completion} showBadges showLeaderboard />
+          <DashboardProfileSidebar
+            user={profile}
+            completion={completion}
+            showBadges
+            showLeaderboard
+            showCompleteButton
+          />
 
           <div className="student-profile-main dashboard-overview-content">
             <CodingStats />
