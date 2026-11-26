@@ -116,7 +116,15 @@ async function finalize(attempt, status) {
     { returnDocument: 'after' },
   );
   if (!done) return AptitudeTestAttempt.findById(attempt._id); // another request finished it first
-  if (xp) await AptitudeProgress.updateOne({ user: attempt.user }, { $inc: { bonusXp: xp } }, { upsert: true });
+  // Wrong answers go into the mistake notebook (once each); XP is added once.
+  const wrong = result.items.filter((it) => it.selected != null && !it.correct).map((it) => String(it.question));
+  const progress = await AptitudeProgress.findOne({ user: attempt.user }).select('mistakes').lean();
+  const have = new Set((progress?.mistakes || []).map((m) => String(m.question)));
+  const fresh = [...new Set(wrong)].filter((id) => !have.has(id)).map((id) => ({ question: id, at: new Date() }));
+  const update = {};
+  if (xp) update.$inc = { bonusXp: xp };
+  if (fresh.length) update.$push = { mistakes: { $each: fresh } };
+  if (Object.keys(update).length) await AptitudeProgress.updateOne({ user: attempt.user }, update, { upsert: true });
   return done;
 }
 

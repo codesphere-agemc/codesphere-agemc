@@ -16,7 +16,7 @@ const QUICK = [
   { title: 'Previous Tests', text: 'Review every test you have taken.', icon: 'bi-clock-history', to: '/aptitude/tests#previous' },
   { title: 'Leaderboard', text: 'Weekly and all-time aptitude rankings.', icon: 'bi-bar-chart-steps', to: null },
   { title: 'Daily Challenge', text: 'A fresh set every day. Keep your streak.', icon: 'bi-lightning-charge', to: null },
-  { title: 'My Performance', text: 'Accuracy, weak topics and progress charts.', icon: 'bi-graph-up-arrow', to: null },
+  { title: 'My Performance', text: 'Accuracy, weak topics and progress charts.', icon: 'bi-graph-up-arrow', to: '/aptitude/progress' },
 ];
 
 function Stat({ icon, value, label }) {
@@ -75,6 +75,12 @@ export default function Aptitude() {
                   <i className="bi bi-mortarboard-fill" aria-hidden="true" /> {summary.level.name}
                   {summary.level.next && <small>{summary.level.next.min - summary.questionsSolved} more solved to {summary.level.next.name}</small>}
                 </div>
+              )}
+              {summary && (
+                <Link to="/aptitude/mistakes" className="apt-level apt-level-link">
+                  <i className="bi bi-journal-x" aria-hidden="true" /> Mistake notebook
+                  <small>{summary.mistakes ? `${summary.mistakes} to review` : 'all clear'}</small>
+                </Link>
               )}
             </div>
             <div className="apt-hero-count">
