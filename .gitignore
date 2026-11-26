@@ -29,3 +29,11 @@ pnpm-debug.log*
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# Aptitude source material (copyrighted PDFs and the raw 100k question dump; not for the repo)
+docs/aptitude/
+docs/*.zip
+docs/quantitative.json
+docs/logical.json
+docs/verbal.json
+docs/data-interpretation.json
