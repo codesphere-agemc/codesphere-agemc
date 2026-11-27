@@ -7,16 +7,27 @@ import { apiRequest } from '../lib/api';
 import Navbar from '../components/Navbar';
 import DashboardProfileSidebar from '../components/DashboardProfileSidebar';
 import BadgeLeaderboard from '../components/BadgeLeaderboard';
-import EmailPreferences from '../components/EmailPreferences';
+import ProjectCard from '../components/ProjectCard';
+import MyProjectsSection from '../components/MyProjectsSection';
 import '../css/Profile.css';
 import { calculateProfileCompletion } from '../lib/profileCompletion';
 
-import * as pdfjsLib from 'pdfjs-dist';
-import pdfWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 import ProfileBadges from '../components/ProfileBadges';
 import { parseResumeText as parseResume, itemsToLines } from '../lib/resumeParser';
 
-pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
+let pdfjsPromise = null;
+const loadPdfJs = () => {
+  if (!pdfjsPromise) {
+    pdfjsPromise = Promise.all([
+      import('pdfjs-dist'),
+      import('pdfjs-dist/build/pdf.worker.min.mjs?url'),
+    ]).then(([pdfjsLib, { default: pdfWorker }]) => {
+      pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
+      return pdfjsLib;
+    });
+  }
+  return pdfjsPromise;
+};
 
 const previewUser = {
   name: 'Alex Morgan',
@@ -69,8 +80,6 @@ const emptyProfile = {
   yearOfStudy: '',
   graduationYear: '',
   skills: [],
-  technicalInterests: [],
-  learningGoals: [],
   codingProfiles: [],
   projects: [],
   achievements: [],
@@ -128,10 +137,6 @@ const normalizeProfile = (source = {}) => {
     ...profile,
     github: (typeof source.github === 'string' ? source.github : '') || legacyGithubProfile?.url || '',
     skills: [...skillsByName.values()],
-    technicalInterests: Array.isArray(source.technicalInterests)
-      ? source.technicalInterests
-      : [],
-    learningGoals: Array.isArray(source.learningGoals) ? source.learningGoals : [],
     codingProfiles: codingProfiles.filter(
       (profile) => profile.platform?.toLowerCase() !== 'github'
     ),
@@ -192,23 +197,6 @@ const sectionConfig = [
     ],
   },
   {
-    id: 'projects',
-    title: 'Projects',
-    subtitle: 'Showcase what you have built',
-    icon: 'bi-kanban',
-    collection: 'projects',
-    fields: [
-      { name: 'title', label: 'Project title', placeholder: 'e.g. Student Management System', required: true },
-      { name: 'type', label: 'Project type', type: 'select', options: ['Web Development', 'App Development', 'AI / ML', 'Data Science', 'Competitive Programming', 'Other'] },
-      { name: 'technologies', label: 'Technologies used', placeholder: 'Java, React, MongoDB' },
-      { name: 'github', label: 'Source code or git repo', type: 'url', placeholder: 'https://github.com/...' },
-      { name: 'demo', label: 'Live demo (optional)', type: 'url', placeholder: 'https://...' },
-      { name: 'status', label: 'Project status', type: 'select', options: ['Completed', 'In Progress', 'Planning'] },
-      { name: 'featured', label: 'Feature this project on my profile', type: 'checkbox', full: true },
-      { name: 'description', label: 'Project description', type: 'textarea', full: true, placeholder: 'What does your project do?', required: true },
-    ],
-  },
-  {
     id: 'achievements',
     title: 'Achievements & Certifications',
     subtitle: 'Your milestones, awards and courses',
@@ -220,16 +208,6 @@ const sectionConfig = [
       { name: 'issuer', label: 'Issued by', placeholder: 'Organisation / Platform' },
       { name: 'year', label: 'Year', type: 'select', options: Array.from({ length: 12 }, (_, i) => String(new Date().getFullYear() - i)) },
       { name: 'link', label: 'Certificate / proof link (optional)', type: 'url', placeholder: 'https://...' },
-    ],
-  },
-  {
-    id: 'learning',
-    title: 'Interests & Learning Goals',
-    subtitle: 'Your interests and learning goals',
-    icon: 'bi-lightbulb',
-    fields: [
-      { name: 'technicalInterests', label: 'Technical interests', type: 'textarea', placeholder: 'Web development, AI, cybersecurity' },
-      { name: 'learningGoals', label: 'Learning goals', type: 'textarea', placeholder: 'Data structures, backend development' },
     ],
   },
 ];
@@ -279,6 +257,7 @@ async function recognizeCanvas(canvas, onProgress) {
 
 const extractResumeText = async (file, onProgress) => {
   if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
+    const pdfjsLib = await loadPdfJs();
     const buffer = await file.arrayBuffer();
 
     const pdf = await pdfjsLib.getDocument({
@@ -1017,7 +996,6 @@ function ProfileSection({ section, profile, onSave, onAdd, onDelete, onReorder, 
 
   const hasEducation = section.id === 'education';
   const hasPersonal = section.id === 'personal';
-  const hasLearning = section.id === 'learning';
   const hasProfessionalLinks = section.id === 'professionalLinks';
   const startEdit = (item = {}, index = null) => {
     const form = isCollection
@@ -1096,11 +1074,7 @@ function ProfileSection({ section, profile, onSave, onAdd, onDelete, onReorder, 
     ].filter(Boolean).join(' · ')
     : hasEducation
       ? [profile.collegeName, profile.department, profile.yearOfStudy].filter(Boolean).join(' · ')
-      : hasLearning
-        ? [profile.technicalInterests?.join(', '), profile.learningGoals?.join(', ')]
-          .filter(Boolean)
-          .join(' · ')
-        : hasProfessionalLinks
+      : hasProfessionalLinks
           ? [profile.github, profile.linkedin, profile.portfolio].filter(Boolean).length
             ? `${[profile.github, profile.linkedin, profile.portfolio].filter(Boolean).length} links added`
             : section.subtitle
@@ -1173,212 +1147,236 @@ function ProfileSection({ section, profile, onSave, onAdd, onDelete, onReorder, 
             </form>
           ) : (
             <>
-              {isCollection && savedItems.length > 0 && (
-                <div className="profile-saved-entries">
-                  {canReorder && (
-                    <p className="profile-reorder-hint">
-                      <i className="bi bi-grip-vertical" aria-hidden="true" />
-                      Drag entries to set the order shown on your public profile.
-                    </p>
-                  )}
+              {section.id === 'projects' ? (
+                <div className="profile-projects-hub-container">
+                  <div className="profile-projects-hub-banner">
+                    <div>
+                      <strong><i className="bi bi-rocket-takeoff" aria-hidden="true" /> CodeSphere Projects Hub</strong>
+                      <p>
+                        Your public showcase projects and contributions are managed directly in Projects Hub and automatically displayed here and on your public profile.
+                      </p>
+                    </div>
+                    <div className="profile-projects-hub-banner-actions">
+                      <Link to="/projects?tab=mine" className="profile-action-button">
+                        <i className="bi bi-kanban" aria-hidden="true" /> My Projects
+                      </Link>
+                      <Link to="/projects/new" className="profile-action-button profile-primary-button">
+                        <i className="bi bi-plus-lg" aria-hidden="true" /> Add Project
+                      </Link>
+                    </div>
+                  </div>
 
-                  {savedItems.map((item, index) => (
-                    <article
-                      className={`profile-saved-entry${dragOverIndex === index ? ' is-drag-over' : ''
-                        }${dragIndex === index ? ' is-dragging' : ''}`}
-                      key={`${section.id}-${index}`}
-                      onDragOver={canReorder ? (event) => {
-                        event.preventDefault();
-                        event.dataTransfer.dropEffect = 'move';
-                        if (dragIndex !== null && dragIndex !== index) {
-                          setDragOverIndex(index);
-                        }
-                      } : undefined}
-                      onDragLeave={canReorder ? (event) => {
-                        if (!event.currentTarget.contains(event.relatedTarget)) {
-                          setDragOverIndex(null);
-                        }
-                      } : undefined}
-                      onDrop={canReorder ? (event) => {
-                        event.preventDefault();
-                        if (dragIndex !== null && dragIndex !== index) {
-                          onReorder(section.collection, dragIndex, index);
-                        }
-                        setDragIndex(null);
-                        setDragOverIndex(null);
-                      } : undefined}
-                    >
+                  {savedItems.length > 0 ? (
+                    <div className="ph-grid profile-projects-ph-grid">
+                      {savedItems.map((project) => (
+                        <div key={project.id || project._id || project.slug} className="profile-project-card-wrap">
+                          <ProjectCard p={project} showStatus />
+                          <div className="profile-project-card-action">
+                            <Link to={`/projects/${project.id || project._id}/edit`} className="ph-btn">
+                              <i className="bi bi-pencil" aria-hidden="true" /> Edit in Hub
+                            </Link>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="profile-empty-state">
+                      <i className="bi bi-kanban" aria-hidden="true" />
+                      <h3>No projects published yet</h3>
+                      <p>Import a project from GitHub or add manually to showcase it on your profile and the Projects Hub.</p>
+                      <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', marginTop: '12px' }}>
+                        <Link to="/projects/new" className="profile-action-button profile-primary-button">
+                          <i className="bi bi-plus-lg" aria-hidden="true" /> Add Project
+                        </Link>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <>
+                  {isCollection && savedItems.length > 0 && (
+                    <div className="profile-saved-entries">
                       {canReorder && (
-                        <span
-                          className="profile-drag-handle"
-                          draggable
-                          role="button"
-                          tabIndex={0}
-                          title="Drag to reorder"
-                          aria-label={`Drag to reorder ${item.title || 'entry'}`}
-                          onDragStart={(event) => {
-                            setDragIndex(index);
-                            setDragOverIndex(index);
-                            event.dataTransfer.effectAllowed = 'move';
-                            event.dataTransfer.setData('text/plain', String(index));
-                          }}
-                          onDragEnd={() => {
+                        <p className="profile-reorder-hint">
+                          <i className="bi bi-grip-vertical" aria-hidden="true" />
+                          Drag entries to set the order shown on your public profile.
+                        </p>
+                      )}
+
+                      {savedItems.map((item, index) => (
+                        <article
+                          className={`profile-saved-entry${dragOverIndex === index ? ' is-drag-over' : ''
+                            }${dragIndex === index ? ' is-dragging' : ''}`}
+                          key={`${section.id}-${index}`}
+                          onDragOver={canReorder ? (event) => {
+                            event.preventDefault();
+                            event.dataTransfer.dropEffect = 'move';
+                            if (dragIndex !== null && dragIndex !== index) {
+                              setDragOverIndex(index);
+                            }
+                          } : undefined}
+                          onDragLeave={canReorder ? (event) => {
+                            if (!event.currentTarget.contains(event.relatedTarget)) {
+                              setDragOverIndex(null);
+                            }
+                          } : undefined}
+                          onDrop={canReorder ? (event) => {
+                            event.preventDefault();
+                            if (dragIndex !== null && dragIndex !== index) {
+                              onReorder(section.collection, dragIndex, index);
+                            }
                             setDragIndex(null);
                             setDragOverIndex(null);
-                          }}
+                          } : undefined}
                         >
-                          <i className="bi bi-grip-vertical" aria-hidden="true" />
-                        </span>
-                      )}
+                          {canReorder && (
+                            <span
+                              className="profile-drag-handle"
+                              draggable
+                              role="button"
+                              tabIndex={0}
+                              title="Drag to reorder"
+                              aria-label={`Drag to reorder ${item.title || 'entry'}`}
+                              onDragStart={(event) => {
+                                setDragIndex(index);
+                                setDragOverIndex(index);
+                                event.dataTransfer.effectAllowed = 'move';
+                                event.dataTransfer.setData('text/plain', String(index));
+                              }}
+                              onDragEnd={() => {
+                                setDragIndex(null);
+                                setDragOverIndex(null);
+                              }}
+                            >
+                              <i className="bi bi-grip-vertical" aria-hidden="true" />
+                            </span>
+                          )}
 
-                      <div className="profile-saved-entry-info">
-                        <strong>{item.title || item.platform || 'Profile entry'}</strong>
-                        <p>
-                          {item.description || item.url || item.role ||
-                            item.category || item.technologies || item.issuer ||
-                            'Added to your profile'}
-                        </p>
+                          <div className="profile-saved-entry-info">
+                            <strong>{item.title || item.platform || 'Profile entry'}</strong>
+                            <p>
+                              {item.description || item.url || item.role ||
+                                item.category || item.technologies || item.issuer ||
+                                'Added to your profile'}
+                            </p>
 
-                        {section.id === 'projects' && (
-                          <>
-                            {item.technologies && (
-                              <small>{item.technologies}</small>
+                            {(item.url || item.github || item.demo || item.link) && (
+                              <div className="profile-entry-links">
+                                {[
+                                  ['Profile', item.url],
+                                  ['Source Code', item.github],
+                                  ['Live View', item.demo],
+                                  ['Checkout', item.link],
+                                ].filter(([, url]) => url).map(([label, url]) => (
+                                  <a key={label} href={url} target="_blank" rel="noreferrer">
+                                    {label} <i className="bi bi-box-arrow-up-right" />
+                                  </a>
+                                ))}
+                              </div>
                             )}
-                            <small>
-                              {item.status}
-                              {item.featured ? ' · Featured' : ''}
-                            </small>
-                          </>
-                        )}
-
-                        {(item.url || item.github || item.demo || item.link) && (
-                          <div className="profile-entry-links">
-                            {[
-                              ['Profile', item.url],
-                              ['Source Code', item.github],
-                              ['Live View', item.demo],
-                              ['Checkout', item.link],
-                            ].filter(([, url]) => url).map(([label, url]) => (
-                              <a key={label} href={url} target="_blank" rel="noreferrer">
-                                {label} <i className="bi bi-box-arrow-up-right" />
-                              </a>
-                            ))}
                           </div>
-                        )}
-                      </div>
 
-                      <div className="profile-entry-actions">
-                        <button
-                          type="button"
-                          className="profile-icon-button"
-                          title="Edit"
-                          aria-label="Edit entry"
-                          onClick={() => startEdit(item, index)}
-                        >
-                          <i className="bi bi-pencil" />
-                        </button>
-                        <button
-                          type="button"
-                          className="profile-icon-button profile-delete-button"
-                          title="Remove"
-                          aria-label="Remove entry"
-                          onClick={() => onDelete(section.collection, index)}
-                        >
-                          <i className="bi bi-trash3" />
-                        </button>
-                      </div>
-                    </article>
-                  ))}
-                </div>
-              )}
-
-              {!isCollection && hasPersonal && (
-                <div className="profile-information-grid">
-                  {[
-                    ['Full name', profile.name],
-                    ['Username', profile.username ? `@${profile.username}` : ''],
-                    ['Phone number', profile.phone],
-                    ['City', profile.city],
-                    ['Gender', profile.gender],
-                    ['Date of birth', profile.dateOfBirth],
-                  ].map(([label, value]) => (
-                    <div key={label}>
-                      <span>{label}</span>
-                      <strong>{value || 'Not added yet'}</strong>
+                          <div className="profile-entry-actions">
+                            <button
+                              type="button"
+                              className="profile-icon-button"
+                              title="Edit"
+                              aria-label="Edit entry"
+                              onClick={() => startEdit(item, index)}
+                            >
+                              <i className="bi bi-pencil" />
+                            </button>
+                            <button
+                              type="button"
+                              className="profile-icon-button profile-delete-button"
+                              title="Remove"
+                              aria-label="Remove entry"
+                              onClick={() => onDelete(section.collection, index)}
+                            >
+                              <i className="bi bi-trash3" />
+                            </button>
+                          </div>
+                        </article>
+                      ))}
                     </div>
-                  ))}
-                  <div className="profile-bio-display">
-                    <span>About me</span>
-                    <strong>{profile.bio || 'Not added yet'}</strong>
+                  )}
+
+                  {!isCollection && hasPersonal && (
+                    <div className="profile-information-grid">
+                      {[
+                        ['Full name', profile.name],
+                        ['Username', profile.username ? `@${profile.username}` : ''],
+                        ['Phone number', profile.phone],
+                        ['City', profile.city],
+                        ['Gender', profile.gender],
+                        ['Date of birth', profile.dateOfBirth],
+                      ].map(([label, value]) => (
+                        <div key={label}>
+                          <span>{label}</span>
+                          <strong>{value || 'Not added yet'}</strong>
+                        </div>
+                      ))}
+                      <div className="profile-bio-display">
+                        <span>About me</span>
+                        <strong>{profile.bio || 'Not added yet'}</strong>
+                      </div>
+                    </div>
+                  )}
+
+                  {!isCollection && hasEducation && (
+                    <div className="profile-information-grid">
+                      {[
+                        ['College / University', profile.collegeName],
+                        ['Degree', profile.degree],
+                        ['Department', profile.department],
+                        ['Current year', profile.yearOfStudy],
+                        ['Graduation year', profile.graduationYear],
+                      ].map(([label, value]) => (
+                        <div key={label}>
+                          <span>{label}</span>
+                          <strong>{value || 'Not added yet'}</strong>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {!isCollection && hasProfessionalLinks && (
+                    <div className="profile-information-grid">
+                      {section.fields.map((field) => (
+                        <div key={field.name}>
+                          <span>{field.label}</span>
+                          {profile[field.name] ? (
+                            <a href={profile[field.name]} target="_blank" rel="noreferrer">
+                              {profile[field.name]}
+                            </a>
+                          ) : (
+                            <strong>Not added yet</strong>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {isCollection && savedItems.length === 0 && (
+                    <div className="profile-empty-state">
+                      <i className={`bi ${section.icon}`} />
+                      <h3>Nothing added yet</h3>
+                      <p>{section.subtitle}</p>
+                    </div>
+                  )}
+
+                  <div className="profile-section-bottom">
+                    <button
+                      type="button"
+                      className="profile-action-button profile-primary-button"
+                      onClick={() => startEdit()}
+                    >
+                      <i className={`bi ${isCollection ? 'bi-plus-lg' : 'bi-pencil'}`} />
+                      {isCollection ? `Add ${section.title}` : 'Edit details'}
+                    </button>
                   </div>
-                </div>
+                </>
               )}
-
-              {!isCollection && hasEducation && (
-                <div className="profile-information-grid">
-                  {[
-                    ['College / University', profile.collegeName],
-                    ['Degree', profile.degree],
-                    ['Department', profile.department],
-                    ['Current year', profile.yearOfStudy],
-                    ['Graduation year', profile.graduationYear],
-                  ].map(([label, value]) => (
-                    <div key={label}>
-                      <span>{label}</span>
-                      <strong>{value || 'Not added yet'}</strong>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {!isCollection && hasLearning && (
-                <div className="profile-information-grid">
-                  {section.fields.map((field) => (
-                    <div key={field.name}>
-                      <span>{field.label}</span>
-                      <strong>
-                        {profile[field.name]?.join(', ') || 'Not added yet'}
-                      </strong>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {!isCollection && hasProfessionalLinks && (
-                <div className="profile-information-grid">
-                  {section.fields.map((field) => (
-                    <div key={field.name}>
-                      <span>{field.label}</span>
-                      {profile[field.name] ? (
-                        <a href={profile[field.name]} target="_blank" rel="noreferrer">
-                          {profile[field.name]}
-                        </a>
-                      ) : (
-                        <strong>Not added yet</strong>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {isCollection && savedItems.length === 0 && (
-                <div className="profile-empty-state">
-                  <i className={`bi ${section.icon}`} />
-                  <h3>Nothing added yet</h3>
-                  <p>{section.subtitle}</p>
-                </div>
-              )}
-
-              <div className="profile-section-bottom">
-                <button
-                  type="button"
-                  className="profile-action-button profile-primary-button"
-                  onClick={() => startEdit()}
-                >
-                  <i className={`bi ${isCollection ? 'bi-plus-lg' : 'bi-pencil'}`} />
-                  {isCollection ? `Add ${section.title}` : 'Edit details'}
-                </button>
-              </div>
             </>
           )}
         </div>
@@ -1595,14 +1593,6 @@ export default function Profile({
 
   const updateSimpleSection = async (_section, values) => {
     const updatedValues = { ...values };
-    for (const field of ['technicalInterests', 'learningGoals']) {
-      if (typeof updatedValues[field] === 'string') {
-        updatedValues[field] = updatedValues[field]
-          .split(',')
-          .map((item) => item.trim())
-          .filter(Boolean);
-      }
-    }
 
     return persistProfile(
       { ...profile, ...updatedValues },
@@ -2006,20 +1996,20 @@ export default function Profile({
             <div className="student-profile-breadcrumb">
               <Link to="/">Home</Link>
               <i className="bi bi-chevron-right" />
-              <span>{isMilestoneView ? 'My Badges' : 'My Profile'}</span>
+              <span>{isMilestoneView ? 'My Projects' : 'My Profile'}</span>
             </div>
           )}
 
           <div className="student-profile-heading">
             <div>
               <p className="student-profile-eyebrow">
-                {isMilestoneView ? 'YOUR CODESPHERE JOURNEY' : 'CODESPHERE COMMUNITY'}
+                {isMilestoneView ? 'YOUR CODESPHERE WORKSPACE' : 'CODESPHERE COMMUNITY'}
               </p>
-              <h1>{isMilestoneView ? 'My Badges' : 'My Profile'}</h1>
+              <h1>{isMilestoneView ? 'My Projects' : 'My Profile'}</h1>
               <p>
                 {isMilestoneView
-                  ? 'Explore your earned badges and CodeSphere progress.'
-                  : 'Add your resume details, skills, projects and coding journey.'}
+                  ? 'Manage your showcase projects, guided milestones, and community achievements.'
+                  : 'Add your resume details, skills, and coding journey.'}
               </p>
             </div>
 
@@ -2051,12 +2041,9 @@ export default function Profile({
 
           <div className={`student-profile-layout dashboard-section-layout${isMilestoneView ? ' dashboard-badges-view' : ''}`}>
             {isMilestoneView ? (
-              <>
-                <div className="dashboard-badges-main">
-                  <ProfileBadges preview={preview} completion={completion} />
-                </div>
-                {!preview && <BadgeLeaderboard />}
-              </>
+              <div style={{ gridColumn: '1 / -1', width: '100%' }}>
+                <MyProjectsSection user={currentUser} preview={preview} />
+              </div>
             ) : (
               <>
                 <DashboardProfileSidebar
@@ -2225,12 +2212,6 @@ export default function Profile({
 
                   {!preview && currentUser?.role !== 'admin' && (
                     <div className="profile-settings-grid">
-                      <EmailPreferences
-                        email={currentUser?.email || ''}
-                        open={openSection === 'email'}
-                        onToggle={() => toggleSection('email')}
-                      />
-
                       <section className={`profile-section-card profile-password-card ${openSection === 'password' ? 'is-expanded' : ''}`}>
                         <button
                           type="button"

@@ -8,6 +8,8 @@ import { CATEGORIES, CATEGORY, fmt, formatDay, ordinal } from '../lib/results';
 import '../css/Results.css';
 
 // Community: every published result board (hackathons, interviews, contests…).
+const stripHtml = (html = '') => String(html).replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+
 export default function Results() {
   const { user } = useAuth();
   const [items, setItems] = useState(null);
@@ -34,7 +36,7 @@ export default function Results() {
   const shown = useMemo(() => {
     const q = query.trim().toLowerCase();
     return (items || []).filter((r) => (!category || r.category === category)
-      && (!q || `${r.title} ${r.organization} ${r.summary}`.toLowerCase().includes(q)));
+      && (!q || `${r.title} ${r.organization} ${stripHtml(r.summary)}`.toLowerCase().includes(q)));
   }, [items, category, query]);
 
   const total = Object.values(counts).reduce((a, b) => a + b, 0);
@@ -106,7 +108,7 @@ export default function Results() {
                   </div>
                   <small className="res-org">{r.organization}{r.heldOn && <> · {formatDay(r.heldOn)}</>}</small>
                   <h2>{r.title}</h2>
-                  {r.summary && <p>{r.summary}</p>}
+                  {r.summary && <p>{stripHtml(r.summary)}</p>}
 
                   {r.top.length > 0 ? (
                     <ol className="res-mini-podium">

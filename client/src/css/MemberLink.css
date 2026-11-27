@@ -1,0 +1,35 @@
+/* =========================================================
+   MemberLink: Public profile links for members
+   Rules: Color changes on hover, NO underline ever
+   ========================================================= */
+
+.member-profile-link,
+a.member-profile-link {
+  color: inherit;
+  text-decoration: none !important;
+  font-weight: inherit;
+  transition: color 0.18s ease, opacity 0.18s ease;
+  cursor: pointer;
+  display: inline;
+}
+
+.member-profile-link:hover,
+.member-profile-link:focus,
+a.member-profile-link:hover,
+a.member-profile-link:focus {
+  text-decoration: none !important;
+  outline: none;
+  color: var(--gold, #F05A36) !important;
+}
+
+.member-profile-link:active,
+a.member-profile-link:active {
+  text-decoration: none !important;
+  outline: none;
+  color: #D34320 !important;
+}
+
+.member-profile-link-plain {
+  color: inherit;
+  font-weight: inherit;
+}

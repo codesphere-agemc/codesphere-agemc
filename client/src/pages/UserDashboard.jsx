@@ -12,21 +12,15 @@ import ProfileBadges from '../components/ProfileBadges';
 import DashboardDiscover from '../components/DashboardDiscover';
 import MyResults from '../components/MyResults';
 import ProfileAvatar from '../components/ProfileAvatar';
+import MyProjectsSection from '../components/MyProjectsSection';
+import BadgeLeaderboard from '../components/BadgeLeaderboard';
 import Profile from './Profile';
 import { calculateProfileCompletion } from '../lib/profileCompletion';
 import '../css/UserDashboard.css';
 
-const baseNavigation = [
-  { label: 'Overview', path: '/user/overview', icon: 'bi-grid-1x2' },
-  { label: 'Milestones', path: '/user/milestone', icon: 'bi-award' },
-  { label: 'My Profile', path: '/user/profile', icon: 'bi-person-lines-fill' },
-  { label: 'My Events', path: '/user/activities', icon: 'bi-calendar-event' },
-  { label: 'My Results', path: '/user/results', icon: 'bi-clipboard-data' },
-];
-
 function getNavigation(user) {
   return [
-    ...baseNavigation,
+    { label: 'Overview', path: '/user/overview', icon: 'bi-grid-1x2' },
     {
       label: 'Search',
       path: user?.username
@@ -34,6 +28,10 @@ function getNavigation(user) {
         : '/user/discover',
       icon: 'bi-search',
     },
+    { label: 'My Projects', path: '/user/projects', icon: 'bi-kanban' },
+    { label: 'My Events', path: '/user/activities', icon: 'bi-calendar-event' },
+    { label: 'My Results', path: '/user/results', icon: 'bi-clipboard-data' },
+    { label: 'My Profile', path: '/user/profile', icon: 'bi-person-lines-fill' },
   ];
 }
 
@@ -113,29 +111,13 @@ function DashboardOverviewSection({ user }) {
     () => calculateProfileCompletion(profile),
     [profile]
   );
-  const nextProfileSteps = useMemo(
-    () => [
-      { label: 'Add your phone number', complete: Boolean(profile.phone) },
-      { label: 'Add your city', complete: Boolean(profile.city) },
-      { label: 'Write a short bio', complete: Boolean(profile.bio) },
-      {
-        label: 'Complete your education details',
-        complete: Boolean(profile.collegeName && profile.department && profile.yearOfStudy),
-      },
-      { label: 'Add at least one skill', complete: (Array.isArray(profile.skillDetails) && profile.skillDetails.length > 0) || (Array.isArray(profile.skills) && profile.skills.length > 0) },
-      { label: 'Link a coding profile', complete: Array.isArray(profile.codingProfiles) && profile.codingProfiles.length > 0 },
-      { label: 'Showcase a project', complete: Array.isArray(profile.projects) && profile.projects.length > 0 },
-      { label: 'Add an achievement', complete: Array.isArray(profile.achievements) && profile.achievements.length > 0 },
-    ].filter((step) => !step.complete).slice(0, 3),
-    [profile]
-  );
   return (
     <>
       <header className="dashboard-page-heading">
         <div>
           <span className="dashboard-page-kicker">YOUR CODESPHERE JOURNEY</span>
           <h1>Overview</h1>
-          <p>Your profile progress and community achievements at a glance.</p>
+          <p>Your profile progress, badges, and community achievements at a glance.</p>
         </div>
       </header>
 
@@ -165,55 +147,23 @@ function DashboardOverviewSection({ user }) {
         </section>
       ) : (
         <div className="student-profile-layout dashboard-section-layout dashboard-overview-layout">
-          <DashboardProfileSidebar user={profile} completion={completion} showBadges />
+          <DashboardProfileSidebar
+            user={profile}
+            completion={completion}
+            showBadges
+            showLeaderboard
+            showCompleteButton
+          />
 
           <div className="student-profile-main dashboard-overview-content">
-            <ProfileBadges compact completion={completion} />
             <CodingStats />
 
-            {nextProfileSteps.length > 0 && (
-              <section className="profile-next-steps">
-                <div className="profile-next-steps-heading">
-                  <div className="profile-next-steps-copy">
-                    <span className="profile-welcome-label">A GOOD NEXT STEP</span>
-                    <h2>Build your community profile</h2>
-                    <p>A few details help people discover your skills and work.</p>
-                  </div>
-
-                  <div
-                    className="profile-next-steps-ring"
-                    style={{ '--profile-progress': `${completion}%` }}
-                    aria-label={`Profile ${completion}% complete`}
-                  >
-                    <div>
-                      <strong>{completion}%</strong>
-                      <small>complete</small>
-                    </div>
-                  </div>
-                </div>
-
-                <ul>
-                  {nextProfileSteps.map((step) => (
-                    <li key={step.label}>
-                      <span className="profile-next-steps-plus" aria-hidden="true">
-                        <i className="bi bi-plus-lg" />
-                      </span>
-                      {step.label}
-                    </li>
-                  ))}
-                </ul>
-
-                <div className="profile-next-steps-footer">
-                  <span>
-                    <i className="bi bi-stars" aria-hidden="true" />
-                    Manage coding profiles and more from your profile.
-                  </span>
-                  <Link to="/user/profile" className="profile-next-steps-link">
-                    Continue profile <i className="bi bi-arrow-right" />
-                  </Link>
-                </div>
-              </section>
-            )}
+            {/* My Badges & Community Milestones (Placed directly below Coding at a glance) */}
+            <section className="dashboard-overview-badges-block">
+              <div className="dashboard-badges-main">
+                <ProfileBadges completion={completion} alwaysOpen />
+              </div>
+            </section>
           </div>
         </div>
       )}
@@ -507,12 +457,16 @@ export default function UserDashboard() {
     return <Navigate to="/user/overview" replace />;
   }
 
-  if (pathname === '/user/projects' || pathname === '/user/skills') {
+  if (pathname === '/user/skills') {
     return <Navigate to="/user/profile" replace />;
   }
 
   if (pathname === '/user/badges') {
-    return <Navigate to="/user/milestone" replace />;
+    return <Navigate to="/user/projects" replace />;
+  }
+
+  if (pathname === '/user/milestone') {
+    return <Navigate to="/user/projects" replace />;
   }
 
   if (pathname === '/user/settings') {
@@ -565,8 +519,8 @@ export default function UserDashboard() {
           <div className="user-dashboard-container">
             {pathname === '/user/overview' ? (
               <DashboardOverviewSection user={user} />
-            ) : pathname === '/user/milestone' ? (
-              <ProfileSection view="milestone" />
+            ) : pathname === '/user/projects' || pathname === '/user/milestone' ? (
+              <MyProjectsSection user={user} />
             ) : pathname === '/user/profile' ? (
               <ProfileSection view="profile" />
             ) : pathname === '/user/activities' ? (

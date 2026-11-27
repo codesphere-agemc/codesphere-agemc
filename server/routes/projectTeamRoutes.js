@@ -186,12 +186,16 @@ router.post('/:id/verify-github', protect, async (req, res) => {
 // Teams
 // =====================================================================
 
-// GET /api/projects/users/search?q=  (for inviting teammates)
+// GET /api/projects/users/search?q=  (for inviting teammates / adding contributors)
 router.get('/users/search', protect, async (req, res) => {
   const q = clean(req.query.q, 40);
   if (q.length < 2) return res.json({ users: [] });
-  const users = await User.find({ _id: { $ne: req.user._id }, name: new RegExp(escapeRegex(q), 'i') }).select('name profileImage yearOfStudy').limit(8).lean();
-  res.json({ users: users.map((u) => ({ ...person(u), year: u.yearOfStudy || '' })) });
+  const regex = new RegExp(escapeRegex(q), 'i');
+  const users = await User.find({
+    role: 'user',
+    $or: [{ name: regex }, { username: regex }, { email: regex }],
+  }).select('name username email profileImage yearOfStudy').limit(10).lean();
+  res.json({ users: users.map((u) => ({ ...person(u), username: u.username || '', email: u.email || '', year: u.yearOfStudy || '' })) });
 });
 
 // GET /api/projects/team/invites: my pending invitations

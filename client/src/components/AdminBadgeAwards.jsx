@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { apiRequest } from '../lib/api';
 import { useNotice } from '../context/NoticeContext';
 import { loadBadgeCatalog } from '../lib/badges';
@@ -28,6 +29,15 @@ export default function AdminBadgeAwards({ userId, userName }) {
       cancelled = true;
     };
   }, [open, userId]);
+
+  useEffect(() => {
+    if (!open) return undefined;
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') setOpen(false);
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [open]);
 
   const refresh = async () => {
     const list = await apiRequest(`/badges/admin/user/${userId}`);
@@ -91,73 +101,135 @@ export default function AdminBadgeAwards({ userId, userName }) {
       <button
         type="button"
         className="adm-badges-toggle"
-        onClick={() => setOpen((o) => !o)}
-        aria-expanded={open}
+        onClick={() => setOpen(true)}
+        aria-haspopup="dialog"
       >
         <i className="bi bi-award" aria-hidden="true" /> Badges
-        {earned && <span>{earned.length}</span>}
-        <i className={`bi ${open ? 'bi-chevron-up' : 'bi-chevron-down'}`} aria-hidden="true" />
+        {earned && <span className="adm-count-pill">{earned.length}</span>}
       </button>
 
-      {open && (
-        <div className="adm-badges-panel">
-          {!earned && !loadError && <p className="bdg-muted">Loading badges…</p>}
+      {open && typeof document !== 'undefined' && createPortal(
+        <div className="adm-modal-backdrop" onClick={() => setOpen(false)} role="presentation">
+          <div
+            className="adm-modal-card adm-modal-badges"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="adm-badges-modal-title"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="adm-modal-header">
+              <div className="adm-modal-header-text">
+                <h3 id="adm-badges-modal-title">
+                  <i className="bi bi-award" aria-hidden="true" /> Badges & Recognition
+                </h3>
+                {userName && <p className="adm-modal-subtitle">Badges earned and community awards for <strong>{userName}</strong></p>}
+              </div>
+              <button
+                type="button"
+                className="adm-modal-close"
+                onClick={() => setOpen(false)}
+                aria-label="Close modal"
+              >
+                <i className="bi bi-x-lg" aria-hidden="true" />
+              </button>
+            </div>
 
-          {earned && (
-            <>
-              <h4>Earned by {userName}</h4>
-              {earned.length ? (
-                <div className="bdg-showcase">
-                  {earned.map((badge) => (
-                    <span key={badge.id} className="bdg-chip" title={badge.note || badge.how}>
-                      <span aria-hidden="true">{badge.emoji}</span> {badge.name}
-                    </span>
-                  ))}
+            <div className="adm-modal-body">
+              {!earned && !loadError && (
+                <div className="adm-modal-loading">
+                  <i className="bi bi-arrow-repeat spin" />
+                  <span>Loading badges catalog and user profile…</span>
                 </div>
-              ) : (
-                <p className="bdg-muted">No badges yet.</p>
               )}
 
-              <h4>Community badges (awarded by admins)</h4>
-              <ul className="adm-badges-list">
-                {communityBadges.map((badge) => {
-                  const has = earnedIds.has(badge.id);
-                  return (
-                    <li key={badge.id}>
-                      <span className="adm-badge-name">
-                        <span aria-hidden="true">{badge.emoji}</span>
-                        <span>
-                          <strong>{badge.name}</strong>
-                          <small>{badge.how}</small>
-                        </span>
-                      </span>
-                      {!has && (
-                        <input
-                          type="text"
-                          maxLength={200}
-                          placeholder="Optional note (why?)"
-                          value={notes[badge.id] || ''}
-                          onChange={(e) => setNotes((n) => ({ ...n, [badge.id]: e.target.value }))}
-                          aria-label={`Note for ${badge.name}`}
-                        />
-                      )}
-                      <button
-                        type="button"
-                        className={has ? 'is-remove' : 'is-award'}
-                        onClick={() => (has ? remove(badge.id) : award(badge.id))}
-                        disabled={busy === badge.id}
-                      >
-                        {busy === badge.id ? '…' : has ? 'Remove' : 'Award'}
-                      </button>
-                    </li>
-                  );
-                })}
-              </ul>
-            </>
-          )}
+              {earned && (
+                <>
+                  <div className="adm-badge-section">
+                    <div className="adm-badge-section-header">
+                      <h4>Earned Badges ({earned.length})</h4>
+                      <small>Automatic achievements & previously awarded badges</small>
+                    </div>
 
-          {loadError && <p className="adm-badges-message" role="alert">{loadError}</p>}
-        </div>
+                    {earned.length ? (
+                      <div className="bdg-showcase adm-modal-showcase">
+                        {earned.map((badge) => (
+                          <span key={badge.id} className="bdg-chip" title={badge.note || badge.how}>
+                            <span aria-hidden="true">{badge.emoji}</span> {badge.name}
+                          </span>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="bdg-muted">No badges earned yet.</p>
+                    )}
+                  </div>
+
+                  <div className="adm-badge-section">
+                    <div className="adm-badge-section-header">
+                      <h4>Community Badges (Award or Revoke)</h4>
+                      <small>Special titles granted directly by administrators</small>
+                    </div>
+
+                    <ul className="adm-badges-list">
+                      {communityBadges.map((badge) => {
+                        const has = earnedIds.has(badge.id);
+                        return (
+                          <li key={badge.id} className={has ? 'is-awarded' : ''}>
+                            <span className="adm-badge-name">
+                              <span className="adm-badge-emoji" aria-hidden="true">{badge.emoji}</span>
+                              <span className="adm-badge-texts">
+                                <strong>{badge.name}</strong>
+                                <small>{badge.how}</small>
+                              </span>
+                            </span>
+                            {!has && (
+                              <input
+                                type="text"
+                                maxLength={200}
+                                placeholder="Optional reason / note..."
+                                value={notes[badge.id] || ''}
+                                onChange={(e) => setNotes((n) => ({ ...n, [badge.id]: e.target.value }))}
+                                aria-label={`Note for ${badge.name}`}
+                              />
+                            )}
+                            <button
+                              type="button"
+                              className={has ? 'is-remove' : 'is-award'}
+                              onClick={() => (has ? remove(badge.id) : award(badge.id))}
+                              disabled={busy === badge.id}
+                            >
+                              {busy === badge.id ? '…' : has ? 'Revoke' : 'Award'}
+                            </button>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </div>
+                </>
+              )}
+
+              {loadError && (
+                <div className="adm-badges-message" role="alert">
+                  <i className="bi bi-exclamation-triangle" /> {loadError}
+                </div>
+              )}
+            </div>
+
+            <div className="adm-modal-footer">
+              <span className="adm-modal-footer-hint">
+                <i className="bi bi-info-circle" aria-hidden="true" />
+                {earned ? `${earned.length} total badges earned` : 'Managing student badges'}
+              </span>
+              <button
+                type="button"
+                className="adm-modal-done-btn"
+                onClick={() => setOpen(false)}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
       )}
     </div>
   );

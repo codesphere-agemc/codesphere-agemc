@@ -1,5 +1,7 @@
+import { Link } from 'react-router-dom';
 import BadgeStrip from './BadgeStrip';
 import ProfileAvatar from './ProfileAvatar';
+import BadgeLeaderboard from './BadgeLeaderboard';
 
 export default function DashboardProfileSidebar({
   user,
@@ -9,6 +11,8 @@ export default function DashboardProfileSidebar({
   // The single CodeSphere banner (client/public) used for every member.
   defaultBanner = '/default-profile-banner.webp',
   showBadges = false,
+  showLeaderboard = false,
+  showCompleteButton = false,
 }) {
   const name = user?.name || 'Member';
   const username = user?.username;
@@ -67,7 +71,7 @@ export default function DashboardProfileSidebar({
       </section>
 
       {completion !== undefined && (
-        <section className="profile-sidebar-card">
+        <section className="profile-sidebar-card profile-completion-card">
           <h3>Profile completion</h3>
 
           <div className="profile-completion-top">
@@ -90,6 +94,18 @@ export default function DashboardProfileSidebar({
           </div>
 
           <p>A complete profile helps the community discover your work.</p>
+
+          {showCompleteButton && (
+            <Link to="/user/profile" className="profile-complete-action-button">
+              Complete Profile <i className="bi bi-arrow-right" aria-hidden="true" />
+            </Link>
+          )}
+        </section>
+      )}
+
+      {showLeaderboard && (
+        <section className="profile-sidebar-card profile-sidebar-leaderboard-card">
+          <BadgeLeaderboard />
         </section>
       )}
     </aside>

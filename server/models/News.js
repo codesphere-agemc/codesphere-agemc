@@ -72,7 +72,7 @@ const digestSchema = new Schema(
     status: { type: String, enum: ['draft', 'published'], default: 'draft', index: true },
     publishedAt: { type: Date, default: null },
     sendNotification: { type: Boolean, default: true },
-    sendEmail: { type: Boolean, default: true },
+    sendEmail: { type: Boolean, default: false },
     notifiedAt: { type: Date, default: null },
     // Newsletter delivery (once per digest).
     emailedAt: { type: Date, default: null },

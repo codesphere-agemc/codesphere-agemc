@@ -1,23 +1,28 @@
 import '../css/Updates.css';
 
-export default function BroadcastOptions({ value, onChange, allowEmail = true }) {
+export default function BroadcastOptions({ value, onChange, allowEmail = false }) {
   const set = (key) => (event) => onChange({ ...value, [key]: event.target.checked });
 
   return (
-    <fieldset className="broadcast-options">
-      <legend>Notify users when published</legend>
-      <label>
-        <input type="checkbox" checked={value.sendNotification} onChange={set('sendNotification')} />
-        <i className="bi bi-bell" aria-hidden="true" />
-        Send to users&apos; notifications
+    <div className="broadcast-options-simple">
+      <label className="broadcast-simple-row">
+        <input
+          type="checkbox"
+          checked={Boolean(value.sendNotification)}
+          onChange={set('sendNotification')}
+        />
+        <span>Send to users&apos; notifications</span>
       </label>
       {allowEmail && (
-        <label>
-          <input type="checkbox" checked={value.sendEmail} onChange={set('sendEmail')} />
-          <i className="bi bi-envelope" aria-hidden="true" />
-          Send to users&apos; emails
+        <label className="broadcast-simple-row">
+          <input
+            type="checkbox"
+            checked={Boolean(value.sendEmail)}
+            onChange={set('sendEmail')}
+          />
+          <span>Send to users&apos; emails</span>
         </label>
       )}
-    </fieldset>
+    </div>
   );
 }
