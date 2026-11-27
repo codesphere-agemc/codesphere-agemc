@@ -13,7 +13,6 @@ const { protect, requireStaff } = require('../middleware/authMiddleware');
 const { notify } = require('../utils/notify');
 const multer = require('multer');
 const { storeImage, deleteImages } = require('../utils/forumMedia');
-const sanitizeDescription = require('../utils/sanitizeDescription');
 
 // Banner upload: one JPEG/PNG/WebP image, up to 5 MB (contents are checked too).
 const bannerUpload = multer({

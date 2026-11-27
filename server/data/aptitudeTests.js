@@ -1,0 +1,51 @@
+// Sample mock tests. Each draws fresh random questions per attempt from the
+// published bank, so they work whatever questions are loaded.
+module.exports = [
+  {
+    slug: 'quant-quick-mock',
+    title: 'Quantitative Aptitude: Quick Mock',
+    description: 'Ten mixed quant questions: percentages, profit and loss, ratios, time and work and more. Negative marking of 0.25.',
+    kind: 'section',
+    sections: [{ name: 'Quantitative', category: 'quantitative', count: 10 }],
+    durationMinutes: 15,
+    negativeMarks: 0.25,
+    maxAttempts: 0,
+  },
+  {
+    slug: 'logical-reasoning-sprint',
+    title: 'Logical Reasoning Sprint',
+    description: 'Ten reasoning questions: series, coding-decoding, blood relations, directions and arrangements.',
+    kind: 'section',
+    sections: [{ name: 'Logical Reasoning', category: 'logical', count: 10 }],
+    durationMinutes: 15,
+    negativeMarks: 0.25,
+    maxAttempts: 0,
+  },
+  {
+    slug: 'verbal-ability-check',
+    title: 'Verbal Ability Check',
+    description: 'Ten verbal questions: vocabulary, grammar, sentence correction and comprehension.',
+    kind: 'section',
+    sections: [{ name: 'Verbal Ability', category: 'verbal', count: 10 }],
+    durationMinutes: 12,
+    negativeMarks: 0,
+    maxAttempts: 0,
+  },
+  {
+    slug: 'placement-mixed-mock',
+    title: 'Placement Mixed Mock',
+    description: 'A campus-placement style paper in three sections. 30 minutes, 0.25 negative marking, 3 attempts.',
+    kind: 'placement',
+    track: 'general',
+    sections: [
+      { name: 'Quantitative', category: 'quantitative', count: 8 },
+      { name: 'Logical Reasoning', category: 'logical', count: 6 },
+      { name: 'Verbal Ability', category: 'verbal', count: 4 },
+      { name: 'Data Interpretation', category: 'data-interpretation', count: 2 },
+    ],
+    durationMinutes: 30,
+    negativeMarks: 0.25,
+    shuffleOptions: true,
+    maxAttempts: 3,
+  },
+];

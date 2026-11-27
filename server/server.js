@@ -57,6 +57,11 @@ const statsRoutes = require('./routes/statsRoutes');
 const recruitmentRoutes = require('./routes/recruitmentRoutes');
 const resultRoutes = require('./routes/resultRoutes');
 const pushRoutes = require('./routes/pushRoutes');
+const aptitudeRoutes = require('./routes/aptitudeRoutes');
+const aptitudeTestRoutes = require('./routes/aptitudeTestRoutes');
+const aptitudeProgressRoutes = require('./routes/aptitudeProgressRoutes');
+const aptitudeDailyRoutes = require('./routes/aptitudeDailyRoutes');
+const aptitudeAdminRoutes = require('./routes/aptitudeAdminRoutes');
 const shareRoutes = require('./routes/shareRoutes');
 const { startProjectSync } = require('./utils/projectSync');
 const { startHackathonSync } = require('./utils/hackathonSync');
@@ -92,6 +97,11 @@ app.use('/api/github', githubRoutes);
 app.use('/api/stats', statsRoutes);
 app.use('/api/recruitments', recruitmentRoutes);
 app.use('/api/results', resultRoutes);
+app.use('/api/aptitude/admin', aptitudeAdminRoutes);
+app.use('/api/aptitude/tests', aptitudeTestRoutes);
+app.use('/api/aptitude', aptitudeProgressRoutes);
+app.use('/api/aptitude', aptitudeDailyRoutes);
+app.use('/api/aptitude', aptitudeRoutes);
 app.use('/api/push', pushRoutes); // admin: email any item to everyone
 app.use('/api/share', shareRoutes);
 

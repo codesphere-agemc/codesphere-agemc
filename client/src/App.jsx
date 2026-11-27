@@ -46,6 +46,17 @@ import AdminReverse from './pages/AdminReverse';
 import News from './pages/News';
 import AdminNews from './pages/AdminNews';
 import Materials from './pages/Materials';
+import Aptitude from './pages/Aptitude';
+import AptitudeTopic from './pages/AptitudeTopic';
+import AptitudePractice from './pages/AptitudePractice';
+import AptitudeTests from './pages/AptitudeTests';
+import AptitudeExam from './pages/AptitudeExam';
+import AptitudeResult from './pages/AptitudeResult';
+import AptitudeProgress from './pages/AptitudeProgress';
+import AptitudeMistakes from './pages/AptitudeMistakes';
+import AptitudeDaily from './pages/AptitudeDaily';
+import AptitudeLeaderboard from './pages/AptitudeLeaderboard';
+import AdminAptitude from './pages/AdminAptitude';
 import AdminMaterials from './pages/AdminMaterials';
 import Hackathons from './pages/Hackathons';
 import HackathonDetail from './pages/HackathonDetail';
@@ -201,6 +212,17 @@ function AppRoutes() {
       <Route path="/reverse-coding/:slug" element={<ProtectedRoute anyRole><ReverseChallenge /></ProtectedRoute>} />
       <Route path="/admin/reverse-coding" element={<ProtectedRoute staff="challenge-editor"><AdminToolLayout><AdminReverse /></AdminToolLayout></ProtectedRoute>} />
       
+      {/* Aptitude: browsing is open; practice, tests and progress need sign-in. */}
+      <Route path="/aptitude" element={<Aptitude />} />
+      <Route path="/aptitude/topics/:slug" element={<AptitudeTopic />} />
+      <Route path="/aptitude/practice" element={<AptitudePractice />} />
+      <Route path="/aptitude/tests" element={<AptitudeTests />} />
+      <Route path="/aptitude/exam/:attemptId" element={<AptitudeExam />} />
+      <Route path="/aptitude/results/:attemptId" element={<AptitudeResult />} />
+      <Route path="/aptitude/progress" element={<AptitudeProgress />} />
+      <Route path="/aptitude/mistakes" element={<AptitudeMistakes />} />
+      <Route path="/aptitude/daily" element={<AptitudeDaily />} />
+      <Route path="/aptitude/leaderboard" element={<AptitudeLeaderboard />} />
       <Route path="/materials" element={<ProtectedRoute anyRole><Materials /></ProtectedRoute>} />
       <Route path="/materials/:slug" element={<ProtectedRoute anyRole><Materials /></ProtectedRoute>} />
       <Route path="/admin/materials" element={<ProtectedRoute staff="challenge-editor"><AdminToolLayout><AdminMaterials /></AdminToolLayout></ProtectedRoute>} />
@@ -224,6 +246,7 @@ function AppRoutes() {
       <Route path="/admin/recruitments" element={<ProtectedRoute adminOnly><AdminToolLayout><AdminRecruitments /></AdminToolLayout></ProtectedRoute>} />
       <Route path="/results" element={<ProtectedRoute anyRole><Results /></ProtectedRoute>} />
       <Route path="/results/:slug" element={<ProtectedRoute anyRole><ResultDetail /></ProtectedRoute>} />
+      <Route path="/admin/aptitude" element={<ProtectedRoute staff="aptitude-editor"><AdminToolLayout><AdminAptitude /></AdminToolLayout></ProtectedRoute>} />
       <Route path="/admin/results" element={<ProtectedRoute staff="hackathon-organizer"><AdminToolLayout><AdminResults /></AdminToolLayout></ProtectedRoute>} />
       <Route path="/admin/results/new" element={<ProtectedRoute staff="hackathon-organizer"><AdminToolLayout><ResultEditor /></AdminToolLayout></ProtectedRoute>} />
       <Route path="/admin/results/:id/edit" element={<ProtectedRoute staff="hackathon-organizer"><AdminToolLayout><ResultEditor /></AdminToolLayout></ProtectedRoute>} />

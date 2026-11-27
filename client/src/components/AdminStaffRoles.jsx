@@ -9,6 +9,7 @@ const ROLES = [
   { id: 'challenge-editor', label: 'Challenge editor', icon: 'bi-arrow-repeat', help: 'Reverse Coding authoring' },
   { id: 'project-reviewer', label: 'Project reviewer', icon: 'bi-kanban', help: 'Review Project Hub submissions' },
   { id: 'hackathon-organizer', label: 'Hackathon organizer', icon: 'bi-trophy', help: 'Run club hackathons and judge submissions' },
+  { id: 'aptitude-editor', label: 'Aptitude editor', icon: 'bi-calculator', help: 'Aptitude questions, tests and imports' },
 ];
 
 // Admin: grant or revoke a student's staff roles.

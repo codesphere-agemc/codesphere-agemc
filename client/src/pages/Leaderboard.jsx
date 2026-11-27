@@ -246,6 +246,7 @@ function ProfileModal({ row, onClose, catalog }) {
           <div className="lb-modal-xp-label">
             <span><i className="bi bi-bug-fill" aria-hidden="true" /> Daily bugs {row.debugXp} XP</span>
             <span><i className="bi bi-code-square" aria-hidden="true" /> Challenges {row.challengeXp} XP</span>
+            {row.aptitudeXp > 0 && <span><i className="bi bi-calculator" aria-hidden="true" /> Aptitude {row.aptitudeXp} XP</span>}
           </div>
           <div className="lb-modal-xp-bar" aria-hidden="true">
             <span style={{ width: `${bugShare}%` }} />

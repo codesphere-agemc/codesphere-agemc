@@ -12,7 +12,7 @@ const Attendance = require('../models/Attendance');
 const { BUGS } = require('../data/debugBugs');
 const { BADGES, BADGE_GROUPS, LEVELS, MAX_SHOWCASE } = require('../data/badges');
 const { debugXpTotal, challengeXpTotal } = require('./progress');
-const { reverseSummary, forumSummary } = require('./activity');
+const { reverseSummary, forumSummary, aptitudeSummary } = require('./activity');
 
 const bugsById = new Map(BUGS.map((bug) => [bug.id, bug]));
 const badgesById = new Map(BADGES.map((badge) => [badge.id, badge]));
@@ -41,7 +41,7 @@ function levelFor(xp) {
  * null), attendance: [{ category }] for events attended, user: { profileComplete },
  * reverse: { xp, solved } (Reverse Coding), forum: { posts, acceptedAnswers }.
  */
-function buildStats({ debug, challenge, attendance = [], user = {}, reverse = {}, forum = {} }) {
+function buildStats({ debug, challenge, attendance = [], user = {}, reverse = {}, forum = {}, aptitude = {} }) {
   const completed = debug?.completed || [];
   const fixed = completed.filter((e) => e.correct);
   const levelOf = (bugId) => bugsById.get(bugId)?.level;
@@ -83,7 +83,13 @@ function buildStats({ debug, challenge, attendance = [], user = {}, reverse = {}
   const reverseXp = reverse.xp || 0;
 
   return {
-    xp: debugXp + challengeXp + reverseXp,
+    xp: debugXp + challengeXp + reverseXp + (aptitude.xp || 0),
+    aptitudeXp: aptitude.xp || 0,
+    aptitudeSolved: aptitude.solved || 0,
+    aptitudeBestStreak: aptitude.bestStreak || 0,
+    aptitudeTests: aptitude.tests || 0,
+    aptitudeDailies: aptitude.dailies || 0,
+    aptitudePerfectDailies: aptitude.perfectDailies || 0,
     debugXp,
     challengeXp,
     reverseXp,
@@ -146,13 +152,14 @@ function evaluateBadges(stats, savedBadges) {
 
 async function loadStats(userId) {
   const id = new mongoose.Types.ObjectId(String(userId));
-  const [debug, challenge, attendance, user, reverse, forum] = await Promise.all([
+  const [debug, challenge, attendance, user, reverse, forum, aptitude] = await Promise.all([
     DebugProgress.findOne({ user: id }).lean(),
     ChallengeProgress.findOne({ user: id }).lean(),
     Attendance.find({ user: id, status: 'present' }).populate('event', 'category').lean(),
     User.findById(id).select('profileComplete').lean(),
     reverseSummary([id]),
     forumSummary([id]),
+    aptitudeSummary([id]),
   ]);
   return buildStats({
     debug,
@@ -161,6 +168,7 @@ async function loadStats(userId) {
     user: user || {},
     reverse: reverse.get(String(id)) || {},
     forum: forum.get(String(id)) || {},
+    aptitude: aptitude.get(String(id)) || {},
   });
 }
 
@@ -203,7 +211,7 @@ async function badgeLeaderboard(currentUserId, limit = 10) {
     return { leaderboard: [], currentUser: null, totalUsers: 0 };
   }
 
-  const [debugProgress, challengeProgress, reverse, badgeCounts] = await Promise.all([
+  const [debugProgress, challengeProgress, reverse, aptitude, badgeCounts] = await Promise.all([
     DebugProgress.find({ user: { $in: userIds } })
       .select('user completed.bugId completed.correct completed.xp')
       .lean(),
@@ -211,6 +219,7 @@ async function badgeLeaderboard(currentUserId, limit = 10) {
       .select('user solved.challengeId')
       .lean(),
     reverseSummary(userIds),
+    aptitudeSummary(userIds),
     UserBadge.aggregate([
       { $match: { user: { $in: userIds }, badgeId: { $in: [...badgesById.keys()] } } },
       { $group: { _id: '$user', count: { $sum: 1 } } },
@@ -225,7 +234,8 @@ async function badgeLeaderboard(currentUserId, limit = 10) {
     const xp =
       debugXpTotal(debugByUser.get(id), (bugId) => bugsById.get(bugId)?.level) +
       challengeXpTotal(challengeByUser.get(id)) +
-      (reverse.get(id)?.xp || 0);
+      (reverse.get(id)?.xp || 0) +
+      (aptitude.get(id)?.xp || 0);
 
     return {
       id,

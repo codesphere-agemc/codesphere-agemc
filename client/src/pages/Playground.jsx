@@ -7,6 +7,7 @@ import { useAuth } from '../context/AuthContext';
 import { useNotice } from '../context/NoticeContext';
 import { apiRequest } from '../lib/api';
 import { celebrateBadges } from '../lib/badges';
+import { makeZip } from '../lib/zip';
 import { LANGUAGES, EXAMPLES, STARTERS, CHALLENGES, TIPS } from '../data/playground';
 import '../css/Playground.css';
 
@@ -25,6 +26,13 @@ function editorUrl(language, theme) {
   });
   return `${EDITOR_ORIGIN}/embed/${language}?${params}`;
 }
+
+// Compiled languages build every file together, so running another file
+// means sending that file on its own (two main() functions would clash).
+const COMPILED = new Set(['c', 'cpp', 'java', 'go', 'rust']);
+// Only code and text files go into downloads (no attached photos etc.).
+const CODE_FILE = /\.(py|c|h|cpp|cc|hpp|java|js|mjs|cjs|ts|go|rs|sql|txt|md|json|csv|html|css|xml|ya?ml)$/i;
+const RESTORE_AFTER_MS = 30000;
 
 function commentPrefix(language) {
   if (language === 'python') return '#';
@@ -131,6 +139,12 @@ const Playground = () => {
   const workspaceRef = useRef(null);
   // Latest code in the editor, kept in a ref so typing doesn't re-render the page.
   const codeRef = useRef('');
+  // Every file in the editor (students can add files inside OneCompiler).
+  const filesRef = useRef([]);
+  const [fileNames, setFileNames] = useState([]);
+  const [runTarget, setRunTarget] = useState('');
+  // While another file is running, the editor briefly holds a reshuffled copy.
+  const swapRef = useRef(null);
 
   const examples = EXAMPLES[language.id] || [];
   const totalXp = useMemo(() => challenges.reduce((sum, c) => sum + c.xp, 0), [challenges]);
@@ -139,23 +153,49 @@ const Playground = () => {
     [challenges, solved],
   );
 
-  const sendToEditor = useCallback(
-    (code) => {
-      codeRef.current = code;
+  const postFiles = useCallback(
+    (files) => {
       iframeRef.current?.contentWindow?.postMessage(
-        {
-          eventType: 'populateCode',
-          language: language.id,
-          files: [{ name: language.file, content: code }],
-        },
+        { eventType: 'populateCode', language: language.id, files },
         EDITOR_ORIGIN,
       );
     },
     [language],
   );
 
+  // Replace the editor's contents with one file (examples, reset, challenges).
+  const sendToEditor = useCallback(
+    (code) => {
+      codeRef.current = code;
+      filesRef.current = [{ name: language.file, content: code }];
+      setFileNames([language.file]);
+      setRunTarget(language.file);
+      postFiles(filesRef.current);
+    },
+    [language, postFiles],
+  );
+
+  // Put the student's files back the way they were after running another file.
+  const restoreFiles = useCallback((latest) => {
+    const swap = swapRef.current;
+    if (!swap) return;
+    window.clearTimeout(swap.timer);
+    swapRef.current = null;
+    // Keep any edits made while it ran, mapped back to the real names.
+    const edited = new Map((latest || []).map((f) => [swap.renamed[f.name] || f.name, f.content]));
+    const restored = swap.original.map((f) => ({ ...f, content: edited.has(f.name) ? edited.get(f.name) : f.content }));
+    filesRef.current = restored;
+    postFiles(restored);
+  }, [postFiles]);
+
   // When the editor (re)loads, restore the saved draft or the first example.
   const handleEditorLoad = () => {
+    // A theme switch reloads the editor: bring back every file, not just main.
+    if (filesRef.current.length > 1 && !swapRef.current) {
+      const files = filesRef.current;
+      window.setTimeout(() => postFiles(files), 800);
+      return;
+    }
     const code =
       codeRef.current ||
       (activeChallenge ? challengeTemplate(activeChallenge, language.id) : '') ||
@@ -169,15 +209,28 @@ const Playground = () => {
   // Track edits from the editor and autosave them per language.
   useEffect(() => {
     const handleMessage = (event) => {
-      if (event.origin !== EDITOR_ORIGIN || !event.data?.files) return;
-      const content = event.data.files[0]?.content;
-      if (typeof content !== 'string') return;
-      codeRef.current = content;
-      localStorage.setItem(SAVE_KEY(language.id), content);
+      if (event.origin !== EDITOR_ORIGIN || !Array.isArray(event.data?.files)) return;
+      const files = event.data.files.filter((f) => f && typeof f.name === 'string');
+      // While another file is running, the editor holds a reshuffled copy: wait
+      // for the run to finish, then put the real files back.
+      if (swapRef.current) {
+        swapRef.current.latest = files;
+        if (event.data.action === 'runComplete') window.setTimeout(() => restoreFiles(files), 300);
+        return;
+      }
+      if (!files.length) return;
+      filesRef.current = files;
+      const names = files.map((f) => f.name);
+      setFileNames((prev) => (prev.join('\n') === names.join('\n') ? prev : names));
+      setRunTarget((prev) => (names.includes(prev) ? prev : names.includes(language.file) ? language.file : names[0]));
+      const main = files.find((f) => f.name === language.file) || files[0];
+      if (typeof main.content !== 'string') return;
+      codeRef.current = main.content;
+      localStorage.setItem(SAVE_KEY(language.id), main.content);
     };
     window.addEventListener('message', handleMessage);
     return () => window.removeEventListener('message', handleMessage);
-  }, [language]);
+  }, [language, restoreFiles]);
 
   // Support links like /playground#debugging-arena (after the page renders).
   const { hash } = useLocation();
@@ -256,6 +309,11 @@ const Playground = () => {
   const switchLanguage = (next) => {
     if (next.id === language.id) return;
     codeRef.current = '';
+    filesRef.current = [];
+    if (swapRef.current) window.clearTimeout(swapRef.current.timer);
+    swapRef.current = null;
+    setFileNames([]);
+    setRunTarget('');
     setActiveExample(0);
     setLanguage(next);
   };
@@ -271,11 +329,39 @@ const Playground = () => {
     });
   };
 
+  const triggerRun = () => {
+    iframeRef.current?.contentWindow?.postMessage({ eventType: 'triggerRun' }, EDITOR_ORIGIN);
+  };
+
+  // OneCompiler always runs the main file (main.py, Main.java, …), or the first
+  // file when there is no main file. To run a different file we briefly hand the
+  // editor a copy where that file comes first, then restore everything.
   const runCode = () => {
-    iframeRef.current?.contentWindow?.postMessage(
-      { eventType: 'triggerRun' },
-      EDITOR_ORIGIN,
-    );
+    const files = filesRef.current;
+    const target = files.find((f) => f.name === runTarget);
+    if (swapRef.current || !target || files.length < 2 || target.name === language.file) {
+      if (!swapRef.current) triggerRun();
+      return;
+    }
+    const renamed = {};
+    let runFiles;
+    if (COMPILED.has(language.id)) {
+      runFiles = [target];
+    } else {
+      runFiles = [target, ...files.filter((f) => f !== target).map((f) => {
+        if (f.name !== language.file) return f;
+        const name = `_${f.name}`;
+        renamed[name] = f.name;
+        return { ...f, name };
+      })];
+    }
+    swapRef.current = {
+      original: files,
+      renamed,
+      timer: window.setTimeout(() => restoreFiles(swapRef.current?.latest), RESTORE_AFTER_MS),
+    };
+    postFiles(runFiles);
+    window.setTimeout(triggerRun, 500);
   };
 
   const resetCode = () => {
@@ -308,14 +394,28 @@ const Playground = () => {
     }
   };
 
+  // Downloads only the code: one file as itself, several as a .zip.
+  // Attachments such as photos are left out.
   const downloadCode = () => {
-    const blob = new Blob([codeRef.current], { type: 'text/plain' });
+    const all = filesRef.current.length ? filesRef.current : [{ name: language.file, content: codeRef.current }];
+    const code = all.filter((f) => typeof f.content === 'string' && CODE_FILE.test(f.name));
+    if (!code.length) {
+      showNotice({ tone: 'error', kicker: 'Download', title: 'Nothing to download', message: 'There is no code in the editor yet.' });
+      return;
+    }
+    const single = code.length === 1;
+    const blob = single ? new Blob([code[0].content], { type: 'text/plain' }) : makeZip(code);
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = language.file;
+    link.download = single ? code[0].name : `codesphere-${language.id}.zip`;
+    document.body.appendChild(link);
     link.click();
-    URL.revokeObjectURL(url);
+    link.remove();
+    window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+    if (code.length < all.length) {
+      showNotice({ tone: 'info', kicker: 'Download', title: 'Only code files downloaded', message: `${all.length - code.length} attached file(s), such as images, were left out.` });
+    }
   };
 
   const toggleTheme = () => {
@@ -613,11 +713,18 @@ const Playground = () => {
                   <span /><span /><span />
                 </span>
                 <i className={`bi ${language.icon}`} aria-hidden="true" />
-                {language.file}
+                {fileNames.length > 1 ? (
+                  <label className="playground-run-target">
+                    <span>Run</span>
+                    <select value={runTarget} onChange={(e) => setRunTarget(e.target.value)} aria-label="File to run">
+                      {fileNames.map((name) => <option key={name} value={name}>{name}</option>)}
+                    </select>
+                  </label>
+                ) : language.file}
               </div>
 
               <div className="playground-actions">
-                <button type="button" className="playground-run" onClick={runCode}>
+                <button type="button" className="playground-run" onClick={runCode} title={fileNames.length > 1 ? `Run ${runTarget}` : 'Run'}>
                   <i className="bi bi-play-fill" aria-hidden="true" /> Run
                 </button>
                 <button type="button" onClick={resetCode} title="Reset to example" aria-label="Reset to example">
@@ -626,7 +733,7 @@ const Playground = () => {
                 <button type="button" onClick={copyCode} title="Copy code" aria-label="Copy code">
                   <i className="bi bi-clipboard" aria-hidden="true" />
                 </button>
-                <button type="button" onClick={downloadCode} title="Download file" aria-label="Download file">
+                <button type="button" onClick={downloadCode} title={fileNames.length > 1 ? 'Download code (.zip)' : 'Download code'} aria-label="Download code">
                   <i className="bi bi-download" aria-hidden="true" />
                 </button>
                 <button
