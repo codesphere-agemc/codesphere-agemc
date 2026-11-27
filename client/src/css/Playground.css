@@ -948,3 +948,31 @@
     justify-content: center;
   }
 }
+
+/* Focus mode: editor only, no examples sidebar. */
+.playground-workspace.is-fullscreen {
+  grid-template-columns: minmax(0, 1fr);
+}
+.playground-workspace.is-fullscreen .playground-examples {
+  display: none;
+}
+
+/* "Run [file]" picker, shown when the editor has more than one file. */
+.playground-run-target {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+}
+.playground-run-target span {
+  opacity: 0.75;
+}
+.playground-run-target select {
+  max-width: 180px;
+  padding: 2px 6px;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  border-radius: 6px;
+  background: rgba(15, 23, 42, 0.6);
+  color: inherit;
+  font: inherit;
+}
